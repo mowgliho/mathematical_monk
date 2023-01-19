@@ -1,0 +1,73 @@
+---
+title: "Information Theory"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+---
+
+# 1.1: Outline of Topics
+
+- efficient (i.e. compression/source coding) and reliable (i.e. error correction/channel coding) transfer of data from a source to a destination
+- examples
+  - compression of images, videos, text files, audio files
+  - RAM, space stuff, bar codes, tv, dsl,
+  - etc.
+- axis 1: efficiency vs reliablity
+  - efficiency: compression; source coding
+  - reliability: error correction; channel coding
+- axis 2: math vs algorithms
+  - math: Information Theory
+  - algorithms: Coding methods
+- topics:
+  - compression & information theory:
+    - Lossless compression
+      - source coding theory (Shannon)
+      - Kraft-Mcmillan inequality
+    - Lossy compression
+      - Rate-Distortion theorem
+  - error-correction & information theory
+    - (noisy) channel coding theorem
+    - Channel capacity
+    - Typicality & Asymptotic Equipartition Property
+  - compression & coding methods
+    - Symbol codes
+      - Huffman 
+    - Stream codes
+      - Arithmetic coding
+      - Lempel-Zim
+  - error-correction & coding methods
+    - Hamming 
+    - BCH 
+    - Reed-Solomon
+    - Turbo codes
+    - Gallager codes (LDPC)
+- closely related fields
+  - cryptography/cryptoanalysis
+  - algorithmic information theory
+  - kolmogorov complexity
+  - minimum description length
+  - network information theory
+- also related
+  - statistics
+  - machine learning
+  - portfolio theory/gambling
+
+# 1.2: Applications of Compression Codes
+- focus on lossless compression algorithms
+- Applications
+  - Huffman
+    - in some sense, an optimal compression algorithm (among "symbol codes")
+    - simple to understand, implement
+    - efficient in smallish applications
+    - png, jpg, mpeg, winzip, gzip, mp3, aac
+  - Arithmetic coding
+    - sometimes, a symbol code is not the best to use (so not Hoffman)
+    - scales better than Huffman
+    - had IP and computation issues, but these are better now
+    - jpg, jbig, mpeg, skype, flash, ppm, paq, DjVu
+  - Lempel-Ziv
+    - was shipped was unix
+    - is asymptotically optimal for "universal codes"
+    - efficient and simple to implement, useful for files generally on computers
+    - png, gif, pkzip, gzip, pdf
