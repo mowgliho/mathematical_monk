@@ -155,3 +155,52 @@ output:
       - then we make judgements on what parts of a message are "unimportant"
       - measure "utility" via distortion theory/function
         - i.e. accept a particular amount of distortion, try to send a minimal amount of information
+
+# 2.1: A puzzle on weighing coins
+
+- 12 coins, either all the same weight, or one has a different weight
+- have a scale
+- 3 weighings to figure out if one is different, and if so which one and if heavier or lighter
+- can use basic ideas from information theory to simplify problems of this sort
+
+# 2.2: Symbol codes - terminology and notation
+
+- 1830s, telegraph technology
+- Samuel Morse and Alfed Veil invent Morse Code
+  - text messages over the telegram
+  - can be seen as sequence of 0s/1s
+- symbol code/variable length code
+  - each symbol has different lengths
+  - morse code can be seen as each letter goes to a binary code word
+    - more frequent letters have shorter codes
+    - i.e. lossless message compression using a probabilistic model
+      - where letters are assumed to follow a iid probability
+- terms
+  - source: sequence of random variables $x_1,\dots,x_n$
+  - memoryless: iid
+  - Discrete memoryless source: $x_1,\dots,x_n \in \mathcal{X}$, where $\mathcal{X}$ is countable.
+  - alphabet: set of elements
+    - generally a source alphabet $\mathcal{X}$ and a code alphabet $\mathcal{A}$
+    - morse code: $\mathcal{X} = \{A,B,C...,0\}$, $\mathcal{A} = \{0,1\}$
+  - $\mathcal{A}_0 = \{a_1,\dots,a_k: k >= 0, a_i\in \mathcal{A} \forall i\}$, i.e. all finite length sequences of letter in $\mathcal{A}$
+
+# 2.3: Symbol codes - definition and examples
+
+- Symbol Code: (Variable length code) is a function $C: \mathcal{X} \rightarrow \mathcal{A}_{0}$.
+- The extension of $C$: the function $C_{0}: \mathcal{X}_{0} \rightarrow \mathcal{A}_{0}$ such that $\forall n\geq 0, \forall x_i \in \mathcal{X}, C_{0} (x_1\dots x_n) = C(x_1)\dots C(x_n)$
+  - i.e. image of the concatenation is the concatenation of the images
+    - sequence of letters -> sequence of code words
+- Codewords of $C$: The sequences $a_1\dots a_k \in \mathcal{A}_0$ such that $C(x) = a_1\dots a_k$ for some $x \in \mathcal{X}$
+- Examples
+  - Morse Code
+    - $\mathcal{X} = \{A,B,\dots,0\}$
+    - $\mathcal{A} = \{0,1,\text{pause}\}$
+    - $C$ is the mapping
+  - Toy example (A)
+    - $\mathcal{X} = \{a,b,c,d\}$, $\mathcal{A} = \{0,1\}$, $X$ is $a$, $b$, $c$, and $d$ with probability $1/2, 1/4, 1/8, 1/8$.
+    - $C(a) = 0, C(b) = 10, C(c) = 110, C(d) = 111$
+    - e.g. $C_{0}(aacb) = 0011010 \in \mathcal{A}_{0}, aacb \in \mathcal{X}_{0}$
+  - Other toy examples
+    - (B) same as before, but $C(a) = 101, C(b) = 00, C(c) = 0001, C(d) = 1$
+    - (C) same as before, but $C(a) = 0, C(b) = 1, C(c) = 01, C(d) = 10$
+      - is a valid code, but $C_{0}$ is non-injective (or not uniquely decodeable): $C_{0}(ab) = C_{0}(c)$
