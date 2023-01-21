@@ -204,3 +204,60 @@ output:
     - (B) same as before, but $C(a) = 101, C(b) = 00, C(c) = 0001, C(d) = 1$
     - (C) same as before, but $C(a) = 0, C(b) = 1, C(c) = 01, C(d) = 10$
       - is a valid code, but $C_{0}$ is non-injective (or not uniquely decodeable): $C_{0}(ab) = C_{0}(c)$
+
+# 2.4 Decoding - prefix vs. non-prefix
+
+- Definition: $C$ is "uniquely decodable" if $C_{0}$ is injective.
+  - necessary for lossless compression
+- Desirable properties for compression
+  - efficiency
+  - computational speed
+  - simplicity
+- Computational speed
+  - encoding: if $\mathcal{X}$ is finite, then is easy (lookup table)
+  - decoding: in some examples, (A) is easier to decode than (B) as you have to look farther ahead to decode.
+- (A) is an example of a "prefix code" - we can decode upon finishing the letter: don't have to look farther forward
+
+# 2.5 Prefix codes
+
+- Terminology: $a_1\dots a_n\in \mathcal{A}_{0}$ is a "prefix" of $b_1\dots b_m$ if $n\leq m$ and $a_1\dots a_n = b_1\dots b_n$
+- Definition: $C$ is a "prefix code", aka prefix-free aka instantaneous if no codeword is a prefix of another codeword.
+- Corollary: any prefix code is uniquely decodable
+- can also think of a code as a tree
+  - start at a root node, then a child for each letter option, a leaf for options
+  - a prefix code is such that the path to a code word node doesn't pass through another code word node.
+- there's also a concept of right-prefix and left-prefix codes.
+  - left-prefix and right-prefix codes are both uniquely decodable.
+
+# 2.6 Prefix codes - remarks and what's next
+
+- Prefix codes are decodable in linear time.
+- As we will see, prefix codes are also efficient
+- Kraft-McMillan inequality will allow us to focus on only prefix codes
+  - tells us that for any uniquely decodable code, there's a prefix code that's "just as good"
+
+# 2.7 Expected codeword length
+
+- measure of compression
+- we want to make the encoded message "short on average"
+- let $X \in \mathcal{X}$ be a discrete random variable with probability density function $p$.
+  - $\mathbb{P}(X = x) = p(x)$
+  - words in $X$ are iid
+- Notation: if $\alpha = \alpha_1\dots\alpha_k\in\mathcal{A}_{0}$ with $\alpha_i\in\mathcal{A}$, then $|\alpha| = k$. Also denote $l(x) = |C(x)|$.
+- Definition: The expected codeword length for $C$ for $\mathcal{X}$ is
+  \[L = \sum_{x\in \mathcal{X}}l(x)p(x)\]
+
+# TODO
+- 2.8 - 2.11: Kraft-Mc-Millan: 14 + 18 + 21 + 12 = 1h 5min
+- 3.1 - 3.4: Entropy as a lower bound: 15 + 13 + 18 + 2 = 48min
+- 3.5 - 3.8: Misc: 14 + 4 + 13 + 8 = 40min
+- 3.9 - 3.10: misc2: 16 + 16: 32min
+- 4.1 - 4.5: Huffman 1: 12 + 14 + 12 + 6 +12 = 56min
+- 4.6 - 4.9: Optimality 1: 15 + 22 + 8 + 18 = 1h 3 min
+- 4.10 - 4.13: Optimality 2: 22 + 14 + 24 + 9 = 1h 9min
+- 5.1 - 5.3: Arithmetic intro: 7 + 29 + 27 = 1h 4min
+- 5.4 - 5.5: misc: 25 + 23 = 48min
+- 5.6 - 5.7: encoder/decoder: 16 + 20 = 36min
+- 5.8: optimality: 32min
+- 5.9 - 5.10: misc: 19 + 24 = 43min
+- 5.11 - 5.13: Finite-precision: 32 + 8 + 18 = 58min
