@@ -247,10 +247,214 @@ output:
 - Definition: The expected codeword length for $C$ for $\mathcal{X}$ is
   \[L = \sum_{x\in \mathcal{X}}l(x)p(x)\]
 
+# 2.8 Kraft-McMillan Inequality
+
+- Terminology: A $B$-ary code is a code $C:\mathcal{X} \rightarrow \mathcal{A}_{0}$ s.t. $|A| = B \geq 1$
+  - e.g. the codes (A), (B), and (C) are 2-ary, e.g. Binary
+- Theorem:
+  - McMillan (a): For any uniquely decodable $B$-ary code $C$,
+\[ \sum_{x\in\mathcal{X}} \frac{1}{B^{l(x)}} \leq 1 \text{ where }l(x) = |C(x)|\]
+  - Kraft (b): if $l: \mathcal{X} \rightarrow \{0,1,2,\dots\}$ satisfies
+\[ \sum_{x\in\mathcal{X}} \frac{1}{B^{l(x)}} \leq 1\]
+    then there exists a $B$-ary prefix code $C$ s.t. $|C(x)| = l(x) \forall x\in \mathcal{X}$
+- worked out examples with (A), (B), and (C)
+- i.e. not all words can have short code words if want to be uniquely decodable
+  - have to strike a balance between long and short code words
+
+# 2.9: Proof of (a)
+
+- Terminology: $x_{i:k} = x_1\dots x_k = (x_1,\dots,x_k)\in \mathcal{X}^k$
+- Proof:
+  - Case 1: $\mathcal{X}$ is finite.
+    - Let $k,s \in \mathbb{Z}$ with $k > 0$, $s\geq 0$.
+    - Consider the set $S = \{ x_{1:k}\in \mathcal{X}^k\text{ s.t. }\sum_{i=1}^kl(x_i)=s\}$
+      - Claim that  $|S| \leq B^s$
+        - $|C_{0}(x_{1:k})| = |C(x_1)\dots C(x_k)| = \sum l(x_i) = s$, $C_{0}(x_{1:k})\in \mathcal{A}^s$
+        - $|\mathcal{A}^s| = B^s$
+        - Thus the image of $S$ in $\mathcal{A}^s$ has size less than or equal to $B^s$.
+        - $C_{0}$ is a 1-1 function, as $C$ is uniquely decodable
+        - done
+    - Consider $(\sum_{x\in\mathcal{X}} B^{-l(x)})^k = \sum_{x_1}\dots\sum_{x_k} B^{-l(x_1)}\dots B^{-l(x_k)} = \sum_{x_{1:k}\in \mathcal{X}^k} B^{-\sum l(x_i)}$
+    - as $\mathcal{X}$ is finite, $\sum_{i=1}^k l(x_i) \leq kl_{max}$, where $l_{max} = max_{x \in \mathcal{X}} l(x)$
+    - group by like terms by the sums of their lengths: 
+\[\sum_{x_{1:k}\in \mathcal{X}^k} B^{-\sum l(x_i)} = \sum_{s = 0}^{kl_{max}} \sum_{x_{1:k}\in \mathcal{X}^k \text{ s.t.}\sum_{l(x_i)} = s} B^{-\sum l(x_i)} = \sum_{s = 0}^{kl_{max}} \sum_{x_{1:k}\in \mathcal{X}^k \text{ s.t.}\sum_{l(x_i)} = s} B^{-s} = \sum_{s = 0}^{kl_{max}} B^{-s} \sum_{x_{1:k}\in \mathcal{X}^k \text{ s.t.}\sum_{l(x_i)} = s} 1\]
+\[= \sum_{s = 0}^{kl_{max}} B^{-s} |\{x_{1:k}\in \mathcal{X}^k \text{ s.t.}\sum_{l(x_i)} = s\}| \leq \sum_{s = 0}^{kl_{max}} B^{-s} B^s = kl_{max} + 1\]
+    - let $r = sum_{x \in \mathcal{X}}B^{-l(x)}$
+    - we've shown that $r^k \leq kl_{max}+1$
+    - suppose that $r > 1$. then as we increase the value of $k$, $r^k$ goes to $\infty$ exponentially, while $kl_{max}+1$ goes only linearly. So at some point the inequality fails.
+    - thus $r <= 1$
+  - Case 2: $\mathcal{X}$ is countably infinite
+    - let $\mathcal{X} = \{1,2,\dots\}$
+    - $\sum_{x\in\mathcal{X}}B^{-l(x)} = lim_{n\rightarrow\infty}\sum_{x = 1}^n B^{-l(x)}$
+    - let $\mathcal{X}' = \{1,\dots,n\}$. Then we can create a code $C'$ on the subset $\mathcal{X}'$.
+    - Then the $r\leq 1$ for $C'$.
+    - limit of things $\leq 1$ is itself $\leq 1$
+
+# 2.10: Examples for (b)
+
+- formal proof is a bit confusing, so easier to work out some examples
+- Setup
+  - Let $\mathcal{X} = \{x_1,x_2,\dots\}$, $l_i = l(x_i)$, $l = (l_1, l_2,\dots)$
+  - Suppose $l_1 \leq l_2 \leq l_3 \dots$
+  - $B$-ary expansions
+    - e.g. $B=2$, then $0.1 = 1/2, 0.01 = 1/4, \dots$
+    - normal decimals are $B=10$
+- General idea: divide up the interval 0-1 into lengths given by $1/2^{l(x)}$, read off the $B$-ary expansions of the intervals -> take the partial sum of the expansion as the encoding, expanding to $i$ places for $l_i$
+- Examples
+  - (A) from before: $l = (1,2,3,3)$, $x_1 = a, x_2 = b, x_3 = c, x_4 = d$
+    - we try to create a $2$-ary prefix code
+    - divide $[0,1]$ into $1/2, 1/4, 1/8, 1/8$, i.e. $0.1, 0.01, 0.001, 0.001$
+    - partial sums are $0, 1/2, 3/4, 7/8$, i.e. $0, 0.1, 0.11, 0.111$
+    - take to $l_i$ places, get $0.0, 0.10, 0.110, 0.111$
+    - the fractional part is the code: 0, 10, 110, 111
+
+# 2.11: Proof sketch for (b)
+
+- why does the procedure above always give us a prefix code?
+  - Fact $\alpha_1\dots\alpha_j$ is a prefix of $\beta_1\dots\beta_m$ if and only if the $B$-ary number $0.\alpha_1\dots\alpha_j \leq 0.\beta_1\dots\beta_m < 0.\alpha_1\dots\alpha_j + 1/2^j$
+    - i.e. $0.1\beta_1\dots\beta_m\in[0.\alpha_1\dots\alpha_j, 0.\alpha_1\dots\alpha_j + 1/2^j]$
+  - So by doing this interval process and adding the $0$s for the padding, we make impossible for one to be a prefix of the other.
+
+# 3.1: Entropy as a lower bound on expected length (part 1)
+
+- $L = \sum_{x\in \mathcal{X}}l(x)p(x)$, $p$ is pmf for Discrete Memoryless Source, i.i.d.
+- want to find a uniquely decodable code to minimize this expected length
+- note that we can classify codes by their lengths for the purposes here.
+  - Kraft-McMillan gives us which lengths are possible
+  - So we want to minimize $L$ given the condition from Kraft-McMillan
+- Notation
+  - $p_i = p(x_i)$, $l_i = l(x_i)$, for $\mathcal{X} = \{x_1,\dots,\}$
+  - assume $p_i > 0\forall i$
+- Problem Statement: minimize $\sum_i l_ip_i$ given that $\sum_i 1/B^{l_i} \leq 1$
+  - to simplify, assume that we allow $l_i\in\mathbb{R}\forall i$, which allows us to use calculus
+  - constrained minimization problem: we'll use Lagrange Multipliers
+- Suppose $l$ is such that $\sum_il_ip_i$ is minimal and $\sum_i1/B^{l_i} < 1$
+  - take an $l_i$:
+    - $1/B^{l_i} \geq 0$
+    - if $l_i\leq0$, this summand is $\geq 1$. Thus if $i > 1$, then the constraint doesn't hold.
+    - thus we assume that $l_i > 0 \forall i$
+    - But now we can take an $l_i$ and reduce it a tiny bit (enough so that $\sum_i1/B^{l_i}$ is still less than 1, which violates the minimality of $\sum_il_ip_i$.
+      - this is a contradiction, so we have that $\sum_i 1/B^{l_i} = 1$ if $\sum_il_ip_i$ is minimized.
+- New Problem Statement: minimize $\sum_i l_ip_i$ given that $\sum_i 1/B^{l_i} = 1$
+  - assume $B >1$ (for the log in the next statement)
+  - also assume $i > 1$ I think
+- let $q_i = 1/B^{l_i}$, i.e. $l_i = \log_B1/q_i$. Then 
+  - the constraint turns into $\sum_iq_i = 1$
+  - minimization turns into $\min_{q_i > 0} \sum p_i\log_B1/q_i$
+
+# 3.2: Entropy as a lower bound on expected length (part 2)
+
+- let $f(q) = \sum_i p_i \log_B 1/q_i$
+  - let's see if it's convex: take the Hessian
+  - note that $\log_Bx = (\ln x)/(\ln B)$, so that $\frac{d}{dx}\log_B\frac{1}{x} = \frac{-1}{x\ln B}$
+  - $\frac{d}{dq_i} f = \frac{-p_i}{q_i\ln B}$
+  - $\frac{d^2}{dq_idq_j} f = \frac{p_i}{q^2\ln B}$ if $i = j$ else 0
+  - Thus the Hessian is diagonal with $\frac{p_i}{q^2\ln B}$ in the diagonal
+    - eigenvalues are the diagonal elements, so are all positive.
+    - Thus $f$ is strictly convex as the Hessian is positive definite
+- Let's think about the constraint $\sum q_i = 1$
+  - The set of $q_i$ that satisfy this are also a convex set
+    - $\forall \alpha \in [0,1]$, then if $\sum q_i = 1$ and $\sum q_i' = 1$, then $\sum \alpha q_i + (1-\alpha)q_i\ = 1$, so all points in between are also in the set.
+- So we're minimizing a convex function over a convex set
+  - this is great, because the restriction of the convex function over the convex set will also be strictly convex
+  - a critical point of the restricted function will be a global minimum for the whole convex set.
+
+# 3.3: Entropy as a lower bound on expected length (part 3)
+
+- We use Lagrange Multipliers to get critical points
+  - $\mathcal{L}(q,\lambda) = \sum_i p_i\log(1/q_i) + \lambda (\sum_i q_i - 1)$
+    - We solve $\nabla_q\mathcal{L} = 0$, $\nabla_\lambda\mathcal{L} = 0$ for $q$ and $\lambda$
+      - second restraint reduces to $\sum_iq_i = 1$
+      - first restraint: we calculated the derivative before of the first part of $\mathcal{L}$
+        - so reduces to $0 = \frac{-p_i}{q_i\ln B} + \lambda$
+      - $\frac{p_i}{\ln B} = \lambda q_i$
+      - $\frac{1}{\ln B}\sum_i p_i = \lambda \sum_i q_i$
+        - we have $\sum_i p_i = 1$ by definition, $\sum_i q_i = 1$ by the constraing
+        - $\frac{1}{\ln B} = \lambda$
+      - substitute for $1/\ln B$, get $q_i = p_i$ for all $i$
+  - so the critical points of the constrained problem are given by $q_i = p_i$
+    - remember $l_i = \log_B(1/q_i)$, so $l_i = \log_B (1/p_i)$ are the lengths that minimize the expected length
+    - Thus the minimimum expected length is simply the information entropy
+      \[\sum_i l_i p_i = \sum_i p_i \log_B(1/p_i)\]
+- let's look at the solution we found:
+  - $p_i$ are all positive and less than 1, so the optimal lengths are non-negative
+  - The optimal lengths are not necessarily integers
+    - we've found a lower bound (i.e. integer solution is at best this minimum expected length)
+- final notation remark: if $B$ is very often $2$, in which case the entropy is
+  \[-\sum_i p_i \log_2 p_i\]
+
+# 3.4: Remark - an alternate proof
+
+- can be done using "relative entropy" to get a quick proof, but the proof isn't so intuitive
+
+# 3.5: Bounds on the optimal expected length
+
+- $H_B(p)$ is a lower bound on the expected code length $L$.
+- In fact, we can achieve a code $L$ such that $H_B(p)\leq L\leq H_B(p) + 1$
+  - remember that the optimal real valued $l_i$ were $\log_B(1/p_i)$ (we assume $p_i > 0$)
+    - and for these optimal values $\sum_i 1/B^{l_i} = 1$
+    - but these are not necessarily integers
+    - suppose we round them - the Kraft-McMillan constraint might not necessarily hold again
+    - let's try $l_i = ceil(\log_B(1/p_i) < log_B(1/p_i) + 1$
+      - as all the $l_i$ are $\geq$ what they were before, the inequality still holds
+      - so by Kraft-McMillan, there exists a uniquely decodable code with these lengths.
+      - what's the expected code word length of this code?
+        - $\log_B(1/p_i) \leq l_i < log_B(1/p_i) + 1$
+        - $p_i\log_B(1/p_i) \leq p_il_i < p_ilog_B(1/p_i) + p_i$
+        - $H_B(p) \leq \sum_i p_il_i < H_B(p) + 1$ as we sum over the $i$
+- so just rounding $\log_B(1/p_i)$ up to the nearest integer is a code with expected length within one of the entropy $H_B(p)$
+  - we call the prefix code thus obtained "Shannon coding"
+- Consider an optimal code, then $H_B(p) \leq L_{Optimal} \leq L_{Shannon} < H_B(p) + 1$
+  - Later, we'll see an optimal symbol code (Huffman)
+- $+1$ is up to one extra bit per source symbol (if $B=2$)
+  - so not that great in practice perhaps
+  - we'll see better approaches later (Block Coding, Source Coding Theorem)
+
+# 3.6: Example - entropy as a lower bound
+
+- Look at (A) from before: symbols $\{a,b,c,d\}$
+  - Definition
+    - code: $0,10,110,111$
+    - lengths: $1,2,3,3$
+    - $p(x)$: $1/2,1/4,1/8,1/8$
+  - Expected Length is $1.75$
+  - Entropy is $H_2(p) = \sum_i p_i\log_2(1/p(x)) = \frac{1}{2}\log_2(2) + \frac{1}{4}\log_2(4)\dots = 1/2 + 1/2 + 3/8 + 3/8 = 1.75$
+  - we've achieved the lower bound for the expected code word length
+    - which makes sense as the ideal lengths are $\log_2(1/p_i)$, which corresponds to the code.
+
+# 3.7: Block codes for compression
+
+- Symbol code $x_1\dots x_n \rightarrow C(x_1)\dots C(x_n)$
+  - code word has to have an integer value lenth
+  - $H \leq L \leq H + 1$ as expected code word length
+    - so can have as much as one extra bit per word, so $n$ bits for $x_1\dots x_n$
+- Block codes
+  - spread out the one bit of inefficiency among a number of the $x_i$
+    - e.g. if spread out among 3 symbols, then spread out the one bit among the 3 symbols
+  - until now, $C:\mathcal{X}\rightarrow \mathcal{A}_{0}$, with $\mathcal{X}$ distributed ot $p$. Discrete memoryless source: iid according to $p$. Calculated expected length $L$
+  - Now, we encode in blocks: given $k$
+    - $C:\mathcal{X}^k\rightarrow A_{0}$
+    - $x_{1:k} = x_1\dots x_k$ distributed according to $p^k$: iid, with each generated by $p$
+    - $L^{(k)} = \sum_{x_{1:k}}l^k(x_{1:k})p^k(x_{1:k})$
+  - we can kind of "change of variables" with $\mathcal{X}' = \mathcal{X}^k$, $p' = p^k$, and have the same situation as before
+  - But now we can be more efficient:
+    - look at the expected encoding length per source symbol $L_k:= L^{(k)}/k$
+    - $H_B(p^k) \leq L^{(k)} < H_B(p^k)+1$
+
+# 3.8: Entropy of iid random variables
+
+- What is $H_B(p^k)$?
+- $p^k(x_{1:k}) = p(x_1)\dots p(x_k)$
+- Theorem: $H_B(p^k) = kH_B(p)$
+  - $H_B(p^k) = \sum_{x_{1:k}} p^k(x_{1:k})\log_B(1/p^k(x_{1:k}))$
+  - $\log_B(1/p^k(x_{1:k})) = \log 1/(p(x_1)\dots p(x_n)) = \sum_1^k \log(1/p(x_i))$
+  - so $H_B(p^k) = \sum_{i = 1}^k\sum_{x_{1:k}}p^k(x_{1:k})\log_B(1/p(x_i))$
+  - note that $\sum_{x_1:k} = \sum_{x_1}\sum_{x_2}\dots\sum_{x_k}$, so we have
+  - $H_B(p^k) = \sum_i \sum_{x_i}\log_B(1/p(x_i))\sum_{x_j, j \neq i}p^k(x_{1:k})$
+  - Note that $\sum_{x_j, j\neq i}p^k(x_{1:k}) = p(x_i)$
+  - $H_B(p^k) = \sum_{i=1}^k\sum_{x_i\in \mathcal{X}}p(x_i)\log_B(1/p(x_i)) = \sum_{i = 1}^k H_B(p) = kH_B(p)$
+      
 # TODO
-- 2.8 - 2.11: Kraft-Mc-Millan: 14 + 18 + 21 + 12 = 1h 5min
-- 3.1 - 3.4: Entropy as a lower bound: 15 + 13 + 18 + 2 = 48min
-- 3.5 - 3.8: Misc: 14 + 4 + 13 + 8 = 40min
 - 3.9 - 3.10: misc2: 16 + 16: 32min
 - 4.1 - 4.5: Huffman 1: 12 + 14 + 12 + 6 +12 = 56min
 - 4.6 - 4.9: Optimality 1: 15 + 22 + 8 + 18 = 1h 3 min
