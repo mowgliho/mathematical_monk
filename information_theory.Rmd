@@ -453,9 +453,46 @@ output:
   - $H_B(p^k) = \sum_i \sum_{x_i}\log_B(1/p(x_i))\sum_{x_j, j \neq i}p^k(x_{1:k})$
   - Note that $\sum_{x_j, j\neq i}p^k(x_{1:k}) = p(x_i)$
   - $H_B(p^k) = \sum_{i=1}^k\sum_{x_i\in \mathcal{X}}p(x_i)\log_B(1/p(x_i)) = \sum_{i = 1}^k H_B(p) = kH_B(p)$
+
+# 3.9: Source Coding Theorem
+
+- Three big theorems of Information Theory
+  - Source Coding theorem: Establishes the best possible compression that one can achieve
+  - Channel Coding theorem: given a noisy channel, the best possible rate at which one can communicate and still achieve arbitrarily low error
+  - Rate Distortion theorem: given a noisy channel and acceptable level of distortion, the best possible rate that one can communicate with distortion under that level.
+- Notation:
+  - $C:\mathcal{X}^k \rightarrow A_{0}$
+  - $L^{(k)}$ is the expected length for encoding of $k$ symbols
+  - $L_k = L^{(k)}/k$: the expected length per source symbol
+- Note that if $|\mathcal{X}|=|A|$, then $L_k$ is the compression ratio of the code
+- Theorem (Shannon): Let $X_1, X_2\dots$ be a discrete memoryless source given by a iid probability distribution $p$, $X_i$ is countable
+  - (a): "you can't beat the entropy": For any uniquely decodable block code $C:\mathcal{X}^k\rightarrow A_{0}$, $H_B(p)\leq L_k$
+  - (b): "you can get as close as you wish": $\forall \epsilon > 0$, $\exists N$ s.t. $\forall k > N$ there is a prefix block code $C:\mathcal{X}^k\rightarrow A_{0}$ s.t. $L_k < H(p) + \epsilon$
+- Proof:
+  - (a): Let $C$ be such a block code, we've shown that $L^{(k)} \geq H_B(p^k)$. Thus $L_k \geq H_B(p)$ as desired
+  - (b): Let $\epsilon > 0$ and consider $k > 0$. Then from our earlier results, we can make a prefix code $C$ such that $L^{(k)} < H(p^k)+1$. Substituting, this is $L_k < H(p) + 1/k$. So as $k$ grows, we can get arbitrarily close (i.e. $N > 1/\epsilon$).
+- This is mainly theoretical, we need to have a code word for every sequence $x_1\dots x_n$, which gets computationally impractical as $k$ grows
+
+# 3.10: Relative Entropy as the mismatch inefficiency
+
+- To do shannon coding, we need to know the true probabilities $p_i$ so that we can assign lengths $ceil(\log_B (1/p+i))$.
+  - in practice, we don't know the true $p_i$
+- Notation: $q_i$ as our estimate for $p_i$, then define lengths using these
+  - $l_i = ceil(\log_B(1/q_i)) = \log_B(1/q_i) + r_i$ with $r_i\in [0,1)$
+- How much does expected code length increase?
+  - $L = \sum l_ip_i = \sum p_i \log (1/q_i) + \sum r_i p_i$
+  - let $R = \sum r_i p_i \geq 0$
+  - $\sum p_i \log (1/q_i)$ is minimized when $q_i = p_i$
+    - $\sum p_i \log (1/q_i) = \sum p_i \log (p_i/q_i) + \sum p_i \log(1/p_i) = \sum p_i \log(p_i/q_i) + H(p)$
+    - $\sum p_i \log_B(p_i/q_i)$ is known as the relative entropy $D(p||q)$ or the Kullback-Leibler divergence
+  - Thus, the increase in code length is $KL(p||q) + R$
+    - $R$ is the "rounding inefficiency"
+    - $KL(p||q)$ is the mismatch inefficiency
+- Note that $H(p)\leq \sum p_i \log (1/q_i) = H(p) + KL(p||q)$
+  - thus $KL(p||q) \geq 0$
+- Also note that $KL(p||q) \neq KL(q||p)$, but $KL$ is intuitively thought of as the "distance" between $p$ and $q$, although it isn't really a true distance.
       
 # TODO
-- 3.9 - 3.10: misc2: 16 + 16: 32min
 - 4.1 - 4.5: Huffman 1: 12 + 14 + 12 + 6 +12 = 56min
 - 4.6 - 4.9: Optimality 1: 15 + 22 + 8 + 18 = 1h 3 min
 - 4.10 - 4.13: Optimality 2: 22 + 14 + 24 + 9 = 1h 9min
