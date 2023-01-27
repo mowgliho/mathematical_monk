@@ -491,9 +491,53 @@ output:
 - Note that $H(p)\leq \sum p_i \log (1/q_i) = H(p) + KL(p||q)$
   - thus $KL(p||q) \geq 0$
 - Also note that $KL(p||q) \neq KL(q||p)$, but $KL$ is intuitively thought of as the "distance" between $p$ and $q$, although it isn't really a true distance.
+
+# 4.1: Huffman coding - introduction and example
+
+- Problem: Design an algorithm taking a pmf $p = (p_1,\dots,p_n)$ and producing an optimal code $C$, where $C$ is optimal w.r.t. minimum length.
+- Shannon-Fano coding: proposed, but not optimal
+- Huffman: student of Fano, invents Huffman coding as a class assignment
+  - Huffman coding is quite simple to implement
+- Example (a): $p(x) = (0.35, 0.2, 0.2, 0.15, 0.1)$
+  - take the two smallest probabilities $(0.15, 0.1)$. The sum of probabilities is 0.25
+  - Now take the two smallest probabilities, replacing 0.15 and 0.1 with 0.25
+  - continue, building a tree until we get 1.0
+  - now label each line in the tree with a symbol from the code alphabet.
+    - e.g. binary, so either 0 or 1
+  - assign the code word to a leaf in the tree by following the path from 1 to the leaf.
+    - this is always a prefix code by construction
+  - expected length is 2.25, which is equal to the entropy $H_2(p) = 2.2016$
+    - this is the best possible $L$ due to rounding inefficiency
+
+# 4.2: Huffman coding - more examples
+
+- Example (b): $p(x) = (0.3, 0.2, 0.1, 0.1, 0.1, 0.1, 0.1)$
+  - do the same process as before, with $B=2$ and $A = \{0,1\}$
+  - Expected length is 2.7 bits, $H_2(p) = 2.6464$ bits
+  - again, pretty close
+  - note that the code is non-unique
+    - there isn't a uniquely optimal code: e.g. if $B=2$, as we can swap 0 with 1 in all code words and we get another optimal code.
+    - There can also be more than one Huffman code, as we can make different choices in building our tree
+      - build a different tree, get a different code
+      - the set of lengths of this new code are also different
+      - the expected length is still 2.7, as apparently all Huffman codes are optimal (!)
+
+# 4.3: $B$-ary Huffman codes
+
+- Take the same probabilities as (a): $(0.35, 0.2, 0.2, 0.15, 0.1)$
+  - suppose $B=3$
+  - take 3 minimal probabilities, do the same process
+  - get an optimal 3-ary code
+  - Expected Length is 1.45 "trits", Entropy is $H_3(p) = 1.3891$ trits
+  - larger $B$, can get shorter length: trits vs bits
+- Example (d): let $p(x) = (0.35, 0.2, 0.15, 0.1, 0.1, 0.1)$
+  - do the same process
+  - after 2 steps, we only have 2 symbols left, which is a problem for the algorithm
+  - so we pad the probabilities with a 0, and now it works
+- (for a $B$-ary code, we pad the length to be $k(B-1)+1$ for some $k$ for the algorithm to work)
       
 # TODO
-- 4.1 - 4.5: Huffman 1: 12 + 14 + 12 + 6 +12 = 56min
+- 4.1 - 4.5: Huffman 1: 6 +12 = 56min
 - 4.6 - 4.9: Optimality 1: 15 + 22 + 8 + 18 = 1h 3 min
 - 4.10 - 4.13: Optimality 2: 22 + 14 + 24 + 9 = 1h 9min
 - 5.1 - 5.3: Arithmetic intro: 7 + 29 + 27 = 1h 4min
