@@ -535,9 +535,36 @@ output:
   - after 2 steps, we only have 2 symbols left, which is a problem for the algorithm
   - so we pad the probabilities with a 0, and now it works
 - (for a $B$-ary code, we pad the length to be $k(B-1)+1$ for some $k$ for the algorithm to work)
+
+# 4.4: Weighted minimization with Huffman coding
+
+- We've been trying to minimize $\sum l_i p_i$.
+- Now consider a different function $f(l) = \sum l_i w_i$ with arbitrary weights instead
+- It turns out that solving this minimization over UD codes has the same solution
+  - replace the $p_i$ with $w_i$ and do Huffman coding again
+  - will also get an optimal UD code
+- i.e. the fact that $p$ is a pdf is not important.
+- For example, suppose that some messages are more important: Can give them more weight so that they get shorter code words
+
+# 4.5: An issue with Huffman coding
+
+- Huffman coding is only optimal as a symbol code
+- sometimes symbol codes perform poorly
+  - e.g. when the source has low entropy
+    - Huffman always has $H\leq L< H+1$, but we can be arbitrarily close to this upper limit $H+1$. And $(H+1)/H$ can be large
+- Suppose $\mathcal{X} = \{1,2\}$, with $p(1) = 0.001$, p(2) = 0.999$.
+  - Huffman coding: $C(1) = 0$, $C(2) = 1$. Then $l = (1,1)$ with $L = 1$.
+  - Shannon coding: $p = (0.001, 0.999)$, so $\log_2(1/p_x) \approx (10, 0.0014)$. If we round them up, then we have lengths $l = (10, 1)$. Thus $L \approx 1.009$.
+    - a prefix code could be $(1111111110, 0)$
+    - not that the bulk of $1.009$ came from the second length $1$, and not really from the first length $10$
+  - What's the entropy: $H_2(p) \approx 0.01$, which is much less than either $L$, with $H_2(p)+1 = 1.01$
+    - if we make $p$ more asymmetric, we can get even closer to $H+1$.
+    - to get closer, we could use block coding and encode blocks and use Huffman
+      - but then the size of the source alphabet is $|\mathcal{X}|^k$, which grows exponentially
+- it turns out that there's an elegant way to remedy this: arithmetic codes
+  - the issue is that we need integer length code lengths for symbol codes
       
 # TODO
-- 4.1 - 4.5: Huffman 1: 6 +12 = 56min
 - 4.6 - 4.9: Optimality 1: 15 + 22 + 8 + 18 = 1h 3 min
 - 4.10 - 4.13: Optimality 2: 22 + 14 + 24 + 9 = 1h 9min
 - 5.1 - 5.3: Arithmetic intro: 7 + 29 + 27 = 1h 4min
