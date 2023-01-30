@@ -563,9 +563,55 @@ output:
       - but then the size of the source alphabet is $|\mathcal{X}|^k$, which grows exponentially
 - it turns out that there's an elegant way to remedy this: arithmetic codes
   - the issue is that we need integer length code lengths for symbol codes
+
+# 4.6: Optimality of Huffman Codes (1)
+
+- We'll prove for $B=2$, $\mathcal{A}=\{0, 1\}$
+  - it's pretty easy to generalize to the more general case.
+- We have:
+  - $\mathcal{X} = \{x_1,\dots,x_n\}$ is finite, $|\mathcal{X}| = n$ (for Huffman, $\mathcal{X}$ is finite.
+  - $p = (p_1,\dots,p_n)$ as the pmf
+  - $l = (l_1,\dots,l_n)$ as the lengths of the code words $x_i$
+  - we want to minimize $L = \sum l_i p_i$  
+  - we consider all UD codes.
+  - we can focus on prefix codes because of Kraft-McMillan (for all UD codes, there's a prefix code with the same lengths)
+- Claim: The Huffman coding procedure always gives an optimal solution for the lengths.
+- Lemma (Existence): For any pmf $p$, there exists an optimal prefix code.
+- Proof: To be done later
+- Lemma (Inverse ordering): For any optimal prefix code, $\forall j,k$ if $p_j > p_k$ then $l_j\leq l_k$. In other words, more common symbols have smaller (or same) lengths.
+- Proof: Let $C$ be an optimal prefix code with lengths $l$ with code words (images of $x_i$ in $\mathcal{A}_{0}$) $\{w_1,\dots w_n\}$
+  - Suppose that $p_j > p_k$
+  - Let $C'$ be such that $w'i = w_i\forall i$ s.t. $i\neq j$ and $i\neq k$. Let $w'_j = w_k$, $w'_k = w_j$.
+  - As $C$ is optimal, then $L_C\leq L_{C'}$, i.e.
+    - $0\leq L_{C'} - L_C = \sum l_i'p_i - \sum l_ip_i = l_kp_j + l_jp_k - l_jp_j - l_kp_k$
+    - $= l_k(p_j - p_k) - l_j(p_j-p_k) = (l_k-l_j)(p_j - p_k)$
+    - as $p_j - p_k > 0$, we have
+    - $0 \leq l_k - l_j$, or $l_j \leq l_k$, as desired.
+
+
+# 4.7: Optimality of Huffman Codes (2)
+
+- Lemma (Siblings): For any pmf $p = (p_1,\dots,p_n)$, there exists an optimal binary prefix code such that two of the longest codewords satisfy the sibling property:
+  - (a): they have the same length
+  - (b): they differ only in the last bit.
+- Proof:
+  - From the set of optimal prefix codes, take the prefix code $C$ that has the smallest $\sum_i l_i$.
+  - We claim that htis code satisfies the lemma.
+    - (a): Suppose that (a) is false. Then one code word is longer than all the others: WLOG, $l_n > l_i\forall i\neq n$.
+      - let $C'$ be a new code with $w_i' = w_i\forall i < n$ and $w_n' = w_n$ without the last bit. I.e. $w_n = w_n'\alpha$ with $\alpha\in\mathcal{A}$
+        - $C'$ is a prefix code: If $w_n'$ is a prefix of another code word $w_i$, it has to be equal because $w_n'$ is at least as long as $w_i$. But that would imply that $w_i$ is a prefix of $w_n$, which is a contradiction. Similarly, none of the $w_i$ can be a prefix of $w_n'$.
+        - Lengths: $C'$ has length at least as good as $C$. If $p_n\neq 0$, then we have a contradiction, but if $p_n = 0$ then $\sum l_i' = \sum l_i - 1$, another contradiction. Thus (a) is true
+    - (b): Suppose that (b) is false. Let $k$ be the length of the longest codewords.
+      - (b) says that there exists two codewords that only differ in the last bit, so we proceed by assuming that any two code words of length $k$ differ somewhere in the first $k-1$ bits.
+      - Let's define $C'$ as being the same as $C$, except for one of the codewords with length $k$ - we remove the last bit from this one.
+      - as before $\sum l_i' = \sum l_i - 1$, so to prove the contradiction we only need to show that it's a prefix code.
+      - To check that it's a prefix, we only have to check that
+        - the new code word is not a prefix of any other word: can't be a prefix of anything of length $k$, as then it'd be the same in the first $k-1$ elements, which breaks (b). Also can't be a prefix of anything of length $k-1$, as then they'd be the same and then that one would be a prefix in $C$. And of course can't be a prefix of stuff with shorter length, as it has length $k-1$
+        - nor that any word is a prefix of the new code word: impossible, as it'd also be a prefix in $C$
+      - so contradiction, and done.
       
 # TODO
-- 4.6 - 4.9: Optimality 1: 15 + 22 + 8 + 18 = 1h 3 min
+- 4.6 - 4.9: Optimality 1: 8 + 18 = 26 min
 - 4.10 - 4.13: Optimality 2: 22 + 14 + 24 + 9 = 1h 9min
 - 5.1 - 5.3: Arithmetic intro: 7 + 29 + 27 = 1h 4min
 - 5.4 - 5.5: misc: 25 + 23 = 48min
