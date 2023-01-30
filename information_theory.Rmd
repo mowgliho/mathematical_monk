@@ -609,9 +609,29 @@ output:
         - the new code word is not a prefix of any other word: can't be a prefix of anything of length $k$, as then it'd be the same in the first $k-1$ elements, which breaks (b). Also can't be a prefix of anything of length $k-1$, as then they'd be the same and then that one would be a prefix in $C$. And of course can't be a prefix of stuff with shorter length, as it has length $k-1$
         - nor that any word is a prefix of the new code word: impossible, as it'd also be a prefix in $C$
       - so contradiction, and done.
-      
+- note: we had to do the silliness with $\sum l_i$, as some of the $p$ could be $0$ in general.
+
+# 4.8: Optimality of Huffman Codes (3)
+
+- Key Lemma (Sibling Code): Let$ $p$ be a pmf s.t. $p_1\geq\dots\geq p_n$. There exists an optimal binary prefix code with code words $w_1,\dots,w_n$ with $w_i = C(x_i)$ s.t.
+  - (a) $l_1\leq\dots\leq l_{n-1} = l_n$ 
+  - (b) $w_{n-1}$ and $w_n$ differ only in the last bit
+- Note that this sibling property is slightly stronger because we are guaranteed that it folds for $x_{n-1}$ and $x_n$
+- Proo Sketch:
+  - use sibling lemma from before to get an optimal prefix code with properties. Then rearrange (using the inverse ordering lemma) to get (a). To get (b), swap code words to get them at the end.
+
+# 4.9: Optimality of Huffman Codes (4)
+
+- The process of creating a Huffman code is a recursive procedure. So proof by induction is probably a good idea
+- Let
+  - $p$ be a pmf $(p_1,\dots,p_n)$ with $p_1\geq\dots\geq p_n$.
+  - $p'$ be a pmf $(p_1,\dots,p_{n-2}, p_{n+1} + p_n)$, i.e. After one Huffman step.
+- Definition: Given a sibling code $C^s$ for $p$, the $H$-contraction (Huffman contraction) $C^c$ to $p'$ is the same as $C^s$ for all except the sibling. On the sibling it removes the last bit.
+  - i.e. $w^c_i = w^s_i\forall i < n-1$, $w^c_{n-1}\alpha = w^s_n$, where $\alpha is the last bit$ of $w^s_n$ and $w^s_{n-1}$.
+- Definition: Given an optimal code $C^o$ for $p'$, the $H$-extension $C^e$ to $p$ of $C^o$ has code words $w^e_i = w^o_i\forall i < n-1$, $w^e_{n-1} = w^o_{n-1}0$, $w^e_n = w^o_{n-1}1$.
+- Note that Any Huffman code for $p$ is the $H$-extension of a Huffman code for $p'$
+
 # TODO
-- 4.6 - 4.9: Optimality 1: 8 + 18 = 26 min
 - 4.10 - 4.13: Optimality 2: 22 + 14 + 24 + 9 = 1h 9min
 - 5.1 - 5.3: Arithmetic intro: 7 + 29 + 27 = 1h 4min
 - 5.4 - 5.5: misc: 25 + 23 = 48min
