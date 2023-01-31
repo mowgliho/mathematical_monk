@@ -617,7 +617,7 @@ output:
   - (a) $l_1\leq\dots\leq l_{n-1} = l_n$ 
   - (b) $w_{n-1}$ and $w_n$ differ only in the last bit
 - Note that this sibling property is slightly stronger because we are guaranteed that it folds for $x_{n-1}$ and $x_n$
-- Proo Sketch:
+- Proof Sketch:
   - use sibling lemma from before to get an optimal prefix code with properties. Then rearrange (using the inverse ordering lemma) to get (a). To get (b), swap code words to get them at the end.
 
 # 4.9: Optimality of Huffman Codes (4)
@@ -631,8 +631,39 @@ output:
 - Definition: Given an optimal code $C^o$ for $p'$, the $H$-extension $C^e$ to $p$ of $C^o$ has code words $w^e_i = w^o_i\forall i < n-1$, $w^e_{n-1} = w^o_{n-1}0$, $w^e_n = w^o_{n-1}1$.
 - Note that Any Huffman code for $p$ is the $H$-extension of a Huffman code for $p'$
 
+# 4.10: Optimality of Huffman Codes (5)
+
+- Lemma (Extension): Let $p$ be a pmf with $p_1\geq\dots\geq p_n$. Let $p' = (p_1,\dots,p_{n-2},p_{n-1} + p_n)$. The $H$-extension to $p$ of any optimal code for $p'$ is optimal for $p$.
+- This will be the induction step of the final proof
+- Proof: Let $C^o$ be optimal for $p'$. Let $C^e$ be the $H$-extension to $p$. Then
+  - $L^e = l^e_1 p_1 + \dots + l^e_{n-1}p_{n-1} + l^e_np_n = l^o_1p_1 + \dots (l^{o}+1)(p_{n-1} + p_n) = L^o + p_{n-1} + p_n$
+  - Let $C^s$ be a optimal prefix sibling code (from Key Lemma) for $p$. Let $C^c$ be the $H$-contraction to $p'$.
+  - Then $L^c = l_1^cp_1+\dots+l^c_{n-1}(p_{n-1} + p_n) = L^s - p_{n-1} - p_n$
+  - If we add the two expressions, we have $L^e_n + L^c_{n-1} = L^o_{n-1} + L^s_n$, where we add subscripts to keep track of which the code is about.
+    - Rearrange: $(L^e_n - L^s_n) + (L^c_{n-1}- L^o_{n-1}) = 0$
+    - Both $C^s$ and $C^o$ are optimal by assumption: Thus both terms are $\geq 0$. Thus both are 0, so that $L^e_n = L^s_n$ and $L^e$ is optimal.
+  - bonus result that $L^c_{n-1} = L^o_{n-1}$, i.e. that the contraction is also optimal.
+
+# 4.11: Optimality of Huffman Codes (6)
+
+- We assumed that the Huffman code was presorted $p_1\geq\dots p_{n-1}\geq p_n$.
+  - Let's define that if we combine $p_{n-1}$ and $p_n$ first then we've made a "Standard Huffman Code"
+  - All Huffman codes are a Standard Huffman Code of some ordering.
+- Theorem: Any Huffman code is optimal.
+- Proof: $S_k$ = "Any Huffman code on a pmf with $k$ elements is optimal" - the induction statement.
+  - The base step $S_2$ is true, as nothing is better than having one bit per code word.
+  - Induction step: Suppose that $S_{n-1}$ is true.
+    - Let $q$ be a pmf on $n$ elements, $C$ be a Huffman code for $q$.
+    - Then as we remarked above, $C$ is a standard Huffman code for an ordering $p$ of $q$.
+      - (permute the code words along with the $p_i$, of course)
+    - This implies that $C$ is the $H$-extension of a Huffman code for $p'$.
+    - As $S_{k-1}$ holds, then the Huffman code in $p'$ is optimal.
+    - Then by the extension lemma, the Huffman code $C$ on $p$ is optimal.
+- Remark: Remember that symbol codes can be inefficient, as all things have to have integer length - and block codes get computationally difficult.
+- Remark: Not every optimal code is Huffman. (later)
+
 # TODO
-- 4.10 - 4.13: Optimality 2: 22 + 14 + 24 + 9 = 1h 9min
+- 4.10 - 4.13: Optimality 2: 24 + 9 = 33min
 - 5.1 - 5.3: Arithmetic intro: 7 + 29 + 27 = 1h 4min
 - 5.4 - 5.5: misc: 25 + 23 = 48min
 - 5.6 - 5.7: encoder/decoder: 16 + 20 = 36min
