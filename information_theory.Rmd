@@ -662,10 +662,161 @@ output:
 - Remark: Remember that symbol codes can be inefficient, as all things have to have integer length - and block codes get computationally difficult.
 - Remark: Not every optimal code is Huffman. (later)
 
+# 4.12: Optimality of Huffman Codes (7)
+
+- Existence of optimal codes: Most people skip this, so we'll prove it
+- Lemma (Existence): if $\mathcal{X}$ is finite and $p$ is a pmf on $\mathcal{X}$, then there exists an optimal (UD with minimal expected code length $L$) code for $p$
+- Note: we can even have $p_i=0$ for some $i$
+- Proof:
+  - Let $|\mathcal{X}| = n$, $p = (p_1,\dots,p_n)$ with $p(x_i) = p_i$ and $p_1\geq \dots\geq p_k > p_{k+1} = \dots= p_n = 0$.
+  - Define $C_n$ by $C_n(x_1) = 0$, $C_n(x_2) = 10$, $C_n(x_3) = 110$ etc.
+    - this is a uniquely decodable prefix code with $L \leq n$.
+  - For $i = 1,\dots,k$, let $m_i = n/p_i$. Then if $l_i\geq m_i$, then $l_ip_i\geq n$.
+    - if a code word has a length for $x_i$ that is more than $m_i$, then it is worse than $C_n$ for that part
+  - let $\mathcal{C} = \{C: C$ is UD with lengths $l_1,\dots,l_n$ where $l_i\leq m_i$ for all $i\}$
+    - note that $C_n\in \mathcal{C}$ as $l_i^{C_n}\leq n = m_ip_i\leq m_i$
+  - let $\mathcal{L} = \{L_C\in \mathbb{R}: C\in\mathcal{C}\}$
+  - Note that $|\mathcal{C}|$ is potentially infinite, as we could have some $p_i = 0$
+  - However, $\mathcal{L}$ is finite with size $\leq m_1m_2\dots m_k$
+  - Thus there is a minimum $L$ (we know that $\mathcal{L}$ is nonempty as $C_n\in\mathcal{L}$)
+  - Let $C_*\in\mathcal{C}$ s.t. $L_{C_*} = \min \mathcal{L}$.
+  - let $C$ be UD
+    - if $C\in\mathcal{C}$, then $L_C\geq L_{C_*}$
+    - if $C\notin\mathcal{C}$, then for some $j$, $l_j > m_j = n/p_j$, so that $l_jp_j > n$, which means that $L_C > L_{C_n}$ and it's length not better.
+
+# 4.13: Not every optimal prefix code is Huffman
+
+- Trivially, we can take a prefix code and swap 0s and 1s => get a "suffix" code and get a UD optimal code.
+  - Thus, not every optimal code is a prefix code
+- Stronger claim: Not every optimal prefix code is a Huffman Code
+  - Example: look at $p = (0.3, 0.3, 0.2, 0.2)$. All Huffman codes have the first digits of $C(x_1)$ and $C(x_2)$ the same, and these are different than the first digit of $C(x_3) and $C(x_4)$.
+    - $L = 2$
+    - we can make another code that doesn't satisfy that first property by simply mixing around the code words -> and get an optimal code that's not Huffman.
+
+# 5.1: Arithmetic coding - introduction
+
+- Elegant and powerful technique, current state of the art in lossless compression.
+- associate a symbol with a subinterval in [0,1], and then choose a number in that subinterval that has a short binary expansion as the code word, e.g. $0.01101_2\rightarrow 01101$
+- Symbol codes
+  - Huffman codes are only optimal as symbol codes
+  - each symbol has an integer value length
+  - can have up to one bit of inefficiency per input word, so if a message has $n$ inputs, can have $n$ bits of inefficiency
+  - we can use block codes to reduce this, but this is computationally inefficient
+- Arithmetic coding: can be within a few bits of the ideal entropy of the whole message
+  - near optimal
+  - efficient
+  - can accomodate more complex (e.g. non-iid) sources in a pretty simple/adaptive manner, separating modelling from coding
+
+# 5.2: Arithmetic coding - Example 1
+
+- Let
+  - $\mathcal{X} = \{0,1,2\}$.
+  - $p = (p_0, p_1, p_2) = (0.2, 0.4, 0.4)$
+- take a sequence $x_1x_2x_3 = 210$
+  - encode it in two parts
+    - associate the sequence with a subinterval
+      - draw interval [0,1)
+      - subdivide according to the pmf $p$: i.e. [0,0.2), [0.2,0.6), [0.6,1)
+      - first symbol is a $2$, so focus on [0.6, 1).
+      - then subdivide this by the pmf again: [0.6,0.68), [0.68, 0.84), [0.84,1)
+      - second symbol is $1$, so focus on [0.68,0.84)
+      - subdivide again, third symbol is 0, so focus on [0.68,0.712)
+    - now find the shortest binary expansion in this interval
+      - i.e. split the interval in half until one of the intervals lies within [0.68,0.712)
+        - [0,1) => [0.5,1) => [0.5,0.75) => [0.625,0.75] => [0.6875,0.75) => [0.6875,0.71875) => [0.6875,0.703125)
+      - We end up with the interval $[0.101100_2,0.101101_2)$
+      - encode 210 as the bottom part of the interval: 101100
+        - even though the bottom was in since 1011, we also added the 0s.
+  - how do we decode: not entirely trivial
+    - one way: encode the length of the original message as well (e.g. 3)
+    - better way: use an "end of file (EOF) symbol"
+      - use a symbol from the source alphabet to always occur at the end of the sequence encoded.
+      - for example, $0\in\mathcal{X}$ is at the end of sequences
+        - so when we find a 0, we know that it's the end of the sequence, and that the next digits are part of the next sequence.
+  - what if we have a long sequence before the EOF occurs?
+    - then the distance on the interval gets really small, which clashes with machine precision
+    - can modify to use only finite precision
+      - periodically rescale back up to 1, have subtleties in rounding
+      - we'll look at this later
+
+# 5.3: Arithmetic coding - Example 2
+
+- This example is also iid
+  - but it doesn't have to be: we just have to split the intervals differently on each layer
+- we're looking for the shortest possible sequence whose interval lies within
+  - it has to be the shortest to disambiguate between one longer sequence and multiple sequence s put together
+    - i.e. to be uniquely decodable
+    - pick the side that is closer
+- Let
+  - $\mathcal{X} = \{0,1,2,3\}$
+  - EOF = 0
+  - $p = (p_0,p_1,p_2,p_3) = (0.05, 0.05, 0.5, 0.4)$
+    - note that doesn't have to be decreasing
+- take the sequence $x_1x_2x_3x_4 = 2320$
+  - let $c = (c_0,c_1,c_2,c_3) = (0, 0.05, 0.1, 0.6)$, i.e. partial sums of $p$
+  - interval $[a,b)$ is given by 
+    - $a = c_2 + p_2c_3 + p_2p_3c_2 = 0.42$
+    - $b = a + p_2p_3p_2p_0 = 0.425$
+  - note that $b = a + f$, with $f = \prod_i p_i$
+  - Now we find the binary sequence
+    - interval in this corresponds to $[0.011011000_2,0.011011001_2)$
+  - thus we take $2320$ to $011011000$
+- In general, the length of the interval that you end up with after the first step is $\prod_i p_i$
+  - by construction
+
+# 5.4: Why the interval needs to be completely contained
+
+- Why not stop when we get one number in the interval?
+  - It wouldn't be uniquely decodable
+- $C:\mathcal{X} \rightarrow \mathcal{A}_0$
+  - prefix if $C(x_1)$ is not a prefix of $C(x_2)$ if $x_1\neq x_2$
+  - uniquely decodable if $C_0$ is 1-1 where $C_0(x_1\dots x_k) = C(x_1)\dots C(x_k)$
+- Define $\mathcal{X}^0 = \{x_1\dots x_k0: x_i\in \mathcal{X}\setminus \{0\}, k \geq 0\}$
+  - then $C:\mathcal{X}^0 \rightarrow \mathcal{A}_0$ is a restricted code on this subset
+- Define the "number version" of the algorithm which stops when one binary expansion number is within, i.e. not the interval. The "interval version" is the normal one.
+  - The number version is not prefix and not uniquely decodable
+  - The interval verison is prefix and uniquely decodable
+- Look at Example 1, where we mapped $210$ to $10110$. Under the number version, it goes to $1011$
+  - Suppose the source was $210121011230$ or something. Under the number version, we have $1011$ + stuff. And we don't know when to stop.
+    - unless we encoded the lengths as well.
+    - in the number version, pretty much any sequence is a valid encoding.
+      - e.g. 101 is a prefix of 1011, and both are valid encoded messages
+    - in the interval version, this isn't the case.
+      - if $C(x^1)$ is a prefix of $C(x^2)$, then $x^1$ is a prefix of $x^2$ as members of $\mathcal{X}^0$
+        - prove by thinking about the intervals, which interval has to be within which, etc.
+        - which is impossible as $x^i$ can only have one 0, which is at the end.
+
+# 5.5: Rescaling operations for arithemetic coding
+
+- we've been assuming infinite precision, as it's easier to understand
+- let's look at an implementation of infinite precision that extends naturally to finite precision.
+- rescaling
+  - keep first part the same for now, look at second part: find binary interval within the other interval
+  - e.g. if we look at list time $[0.68,0.712)$
+  - first split: $[0,0.5), [0.5,1)$
+  - note that the the first part of the code word is 1
+  - then look at $[0.5,1)$
+    - rescale up to $[0,1)$
+    - note that $[a,b)$ goes to $[0.36, 0.424)$
+    - note that we will select the first half, so second part of the code word is 0
+    - repeat
+  - at some point, 0.5 could split $[a,b)$
+    - look at $0.5-a$ and $b-0.5$
+    - we split the bigger one, as we will be able to get inside $[a,b)$ faster.
+    - or could keep track at this split point and go on.
+  - three options: $[a,b)$
+    - in lower half or upper half: focus
+    - straddle the middle point: keep track and continue expanding.
+      - the shortest code will be around the middle, so either 011..(LHS) or 100 (RHS) for this portion
+- more precisely, given $[a,b)$:
+  - $b < 0.5$: "emit" 0, consider the new interval $[2a, 2b)$
+  - $a > 0.5$: emit 1, consider the new interval $[2(a-0.5), 2(b-0.5))$
+  - $a \in (0.25,0.5]$, $b\in [0.5,0.75)$: look at $[2(a-1/4), 2(b-0.1/4))$, i.e. the middle two, keep track $s:= s+1$ ($s$ starts out at $0$)
+  - $a\leq 1/2$, $b\geq 3/4$: $s:= s+1$, emit $10\dots 0$, with $s$ zeros.
+  - $a\leq 1/4$, $b\geq 1/2$: $s:= s+1$, emit $01\dots 1$, with $s$ ones.
+  - note that if $a\leq 1/4$ and $b\geq 3/4$ we can pick either source.
+
 # TODO
-- 4.10 - 4.13: Optimality 2: 24 + 9 = 33min
-- 5.1 - 5.3: Arithmetic intro: 7 + 29 + 27 = 1h 4min
-- 5.4 - 5.5: misc: 25 + 23 = 48min
 - 5.6 - 5.7: encoder/decoder: 16 + 20 = 36min
 - 5.8: optimality: 32min
 - 5.9 - 5.10: misc: 19 + 24 = 43min
