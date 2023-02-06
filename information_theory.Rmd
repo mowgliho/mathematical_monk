@@ -870,7 +870,67 @@ output:
         - or rescale the remainder
   - in practice, $M$ can be quite large - but if we assume the EOL happens not too rarely, we don't have to do the whole thing.
 
+# 5.8: Near optimality of arithmetic coding
+
+- Huffman coding is optimal but not scalable, because to we'd have to make arbitrarily large blocks - which is impractical
+- infinite precision arithmetic coding does scale up though (essentially has arbitrarily large blocks)
+  - you can also get very close to the entropy: within 2 bits of the ideal for the entire sequence
+  - finite precision coding isn't too shabby either
+- Let
+  - $\mathcal{X}=\{0,1,\dots,n\}$, EOF = 0, $p=(p_0,p_1,\dots,p_n)$
+  - define $\mathcal{X}^1=\{x_1\dots x_k0: x_i\in \mathcal{X}\setminus\{0\}, k\geq 0\}$, i.e. sequences to encode with the EOF
+  - we want to encode $x_1x_2\dots x_k0\in \mathcal{X}^1$
+  - $p^1(x_1\dots x_k0) = p_{x_1}p_{x_2}\dots p_{0}$
+    - note that this is a pmf on $\mathcal{X}^1$: easily shown
+  - What is the expected encoded length $L^1 = \sum l(x)p^1(x)$ for $x \in \mathcal{X}^1$
+    - $l(x) = $number of bits to encode for $[a,b)$ for $x_1\dots x_k0$, i.e. $\min\{m: \exists \beta_1,\dots,\beta_m\in\{0,1\}$ s.t. $[0.\beta_1\dots\beta_m,0.\beta_1\dots\beta_m + 1/2^m)\subset [a,b)\}$
+      - the length of the $\beta$ interval $1/2^m$ and at smallest $(b-a)/2$.
+      - i.e. $1/2^m\leq (b-a)/2$ implies that $l(x)\leq m$
+        - $1/2^{m-1}\leq b-a = \prod_{i\in x} p_i = p^1(x)$
+          - $\log_2(1/p^1(x))\leq m-1$
+          - choose $m = ceil(\log_2(1/p^1(x))) + 1$.
+            - then the condition holds, and $l(x)\leq m = ceil(\log_2(1/p^1(x))) + 1$, giving us an upper bound for $l(x)$
+            - note that this also the length of a shannon code on $p^1$ and $\mathcal{X}^1$
+              - thus $H_2(p^1) \leq L^1(x) < H_2(p^1)+1$
+              - $l(x)\leq ceil(\log_2(1/p^1(x)))+1 = l_{sh}(x)+1$
+              - $L^1 = \sum_{\mathcal{X}^1}l(x)p^1(x)\leq L_{sh}+1 < H_2(p^1) + 2$
+      - thus, $L^1< H_2(p^1)+2$ for elements in $\mathcal{X}^1$.
+  - in practice, of course we don't know $p$ so we can do better perhaps
+  - note that using the shannon code is also computationally impractical.
+    - it's just useful that the arithmetic coding is bounded by the shannon code
+
+# 5.9: Computational Complexity of Arithmetic Coding
+
+- Infinite precision case
+  - assume that we can do infinite precision addition and multiplication in constant time
+    - this is unreasonable, but is somewhat the case for finite precision
+  - Let 
+    - $\mathcal{X}=\{0,1,\dots,n\}$, $p=(p_0,p_1,\dots,p_n)$
+    - $x = x_1\dots x_k$, $|x| = k$
+    - $l(x) = m$, i.e. the length of the encoded message
+  - e.g. in our example we took $210$ to $101100$, i.e. $|x|=3$ and $l(x) = 6$
+  - we can precompute $c$, $d$. We want to see complexity as $|x|$ changes.
+    - encoder: 
+      - part 1 (the for loop to find $[a,b)$): all the stuff inside is constant time, so $O(|x|)$, i.e. the number of loops
+      - part 2 (find the interval inside):
+        - number of iterations of loop is $O(l(x))$: each part of the loops emits one
+      - thus encoder complexity is $O(|x| + l(x))$
+    - decoder:
+      - assume that $M\approx m$, which we'll see in the finite case
+        - computing $z$ is about $O(M)=O(m)=O(l(x))$
+        - the while loop: stuff inside is constant (note that $n$ is fixed), so it depend on the number of iterations of the while loop:
+          - i.e. number that we emit, which is $|x|$
+      - thus decoder complexity is $O(|x| + l(x))$
+  - So this is good if $l(x)$ is not too enormous
+    - but as we saw before, arithmetic coding is pretty near optimal. So the expected $l(x)$ is also near optimal. $\mathbb{E}(l(x)) = L^1 < H(p^1)+2$
+- Finite precision case:
+  - encoder and decoder complexity are still linear in $l(x)$ and $|x|$
+  - what does degrade is the compression performance
+    - this is dependent on being able to approximate $p$
+    - which is pretty easy with 32 bit precision/for most cases
+
+# 5.10: Generalizing arithmetic coding to non-iid models
+
 # TODO
-- 5.8: optimality: 32min
-- 5.9 - 5.10: misc: 19 + 24 = 43min
-- 5.11 - 5.13: Finite-precision: 32 + 8 + 18 = 58min
+- 5.10: misc: 24min
+- 5.11 - 5.14: Finite-precision: 32 + 8 + 18 + 24 = 1h 22min
