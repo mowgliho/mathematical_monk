@@ -931,6 +931,31 @@ output:
 
 # 5.10: Generalizing arithmetic coding to non-iid models
 
-# TODO
-- 5.10: misc: 24min
-- 5.11 - 5.14: Finite-precision: 32 + 8 + 18 + 24 = 1h 22min
+- Quite simple: just use the non-iid probabilities instead.
+  - previously: $p^1(x_1\dots x_k0) = p_{x_1}p_{x_2}\dots p_{x_k}0$, $\mathcal{X} = \{0,1,\dots,n\}$, $p = (p_0,p_1,\dots, p_n)$, $\mathcal{X}^1 = \{x_1\dots x_k0: x_i\in \mathcal{X}\setminus\{0\}, k \geq 0\}$
+  - as $p$ is not iid in practice, we are pretty inefficient in our compression
+  - We can factor:
+    - $q(x_1\dots x_k0)=q(x_1)q(x_2|x_1)q(x_3|x_1,x_2)\dots q(0|x_1,\dots,x_k)$
+    - note that different elements of $\mathcal{X}^1$ have different lengths $k+1$, but this is still ok.
+  - we were able to get close to the ideal entropy because $b-a = p^1(x)$
+    - because each time we focused in, we looked at length equal to $p_i$
+    - therefore, this time we focus in on $q_i(x_i|x_1,\dots,x_{i+1})$
+      - i.e. subdivide based on the conditional probabilities
+  - we have to be able to compute $q$ efficiently though
+- Decoding: we do the same thing as before (subdivide by $q_i$ instead of $p$, and it works out
+- EOF symbol:
+  - if we predict when the end of file symbol is coming, then get better compression than if we had just sent the length of the message
+    - i.e. we can use the content of the message to predict when the EOF comes
+- Example in practice: $m$-th order Markov model
+
+# 5.11: Finite-precision arithmetic coding - Rescaling
+32
+
+# 5.12: Finite-precision arithmetic coding - Setup
+8
+
+# 5.13: Finite-precision arithmetic coding - Encoder
+18
+
+# 5.14: Finite-precision arithmetic coding - Decoder
+24
