@@ -216,7 +216,7 @@ output:
 - Computational speed
   - encoding: if $\mathcal{X}$ is finite, then is easy (lookup table)
   - decoding: in some examples, (A) is easier to decode than (B) as you have to look farther ahead to decode.
-- (A) is an example of a "prefix code" - we can decode upon finishing the letter: don't have to look farther forward
+- An example of a "prefix code" is (A) - we can decode upon finishing the letter: don't have to look farther forward
 
 # 2.5 Prefix codes
 
@@ -552,7 +552,7 @@ output:
 - sometimes symbol codes perform poorly
   - e.g. when the source has low entropy
     - Huffman always has $H\leq L< H+1$, but we can be arbitrarily close to this upper limit $H+1$. And $(H+1)/H$ can be large
-- Suppose $\mathcal{X} = \{1,2\}$, with $p(1) = 0.001$, p(2) = 0.999$.
+- Suppose $\mathcal{X} = \{1,2\}$, with $p(1) = 0.001$, $p(2) = 0.999$.
   - Huffman coding: $C(1) = 0$, $C(2) = 1$. Then $l = (1,1)$ with $L = 1$.
   - Shannon coding: $p = (0.001, 0.999)$, so $\log_2(1/p_x) \approx (10, 0.0014)$. If we round them up, then we have lengths $l = (10, 1)$. Thus $L \approx 1.009$.
     - a prefix code could be $(1111111110, 0)$
@@ -613,7 +613,7 @@ output:
 
 # 4.8: Optimality of Huffman Codes (3)
 
-- Key Lemma (Sibling Code): Let$ $p$ be a pmf s.t. $p_1\geq\dots\geq p_n$. There exists an optimal binary prefix code with code words $w_1,\dots,w_n$ with $w_i = C(x_i)$ s.t.
+- Key Lemma (Sibling Code): Let $p$ be a pmf s.t. $p_1\geq\dots\geq p_n$. There exists an optimal binary prefix code with code words $w_1,\dots,w_n$ with $w_i = C(x_i)$ s.t.
   - (a) $l_1\leq\dots\leq l_{n-1} = l_n$ 
   - (b) $w_{n-1}$ and $w_n$ differ only in the last bit
 - Note that this sibling property is slightly stronger because we are guaranteed that it folds for $x_{n-1}$ and $x_n$
@@ -689,7 +689,7 @@ output:
 - Trivially, we can take a prefix code and swap 0s and 1s => get a "suffix" code and get a UD optimal code.
   - Thus, not every optimal code is a prefix code
 - Stronger claim: Not every optimal prefix code is a Huffman Code
-  - Example: look at $p = (0.3, 0.3, 0.2, 0.2)$. All Huffman codes have the first digits of $C(x_1)$ and $C(x_2)$ the same, and these are different than the first digit of $C(x_3) and $C(x_4)$.
+  - Example: look at $p = (0.3, 0.3, 0.2, 0.2)$. All Huffman codes have the first digits of $C(x_1)$ and $C(x_2)$ the same, and these are different than the first digit of $C(x_3)$ and $C(x_4)$.
     - $L = 2$
     - we can make another code that doesn't satisfy that first property by simply mixing around the code words -> and get an optimal code that's not Huffman.
 
@@ -883,7 +883,7 @@ output:
   - $p^1(x_1\dots x_k0) = p_{x_1}p_{x_2}\dots p_{0}$
     - note that this is a pmf on $\mathcal{X}^1$: easily shown
   - What is the expected encoded length $L^1 = \sum l(x)p^1(x)$ for $x \in \mathcal{X}^1$
-    - $l(x) = $number of bits to encode for $[a,b)$ for $x_1\dots x_k0$, i.e. $\min\{m: \exists \beta_1,\dots,\beta_m\in\{0,1\}$ s.t. $[0.\beta_1\dots\beta_m,0.\beta_1\dots\beta_m + 1/2^m)\subset [a,b)\}$
+    - $l(x)$ is the number of bits to encode for $[a,b)$ for $x_1\dots x_k0$, i.e. $\min\{m: \exists \beta_1,\dots,\beta_m\in\{0,1\}$ s.t. $[0.\beta_1\dots\beta_m,0.\beta_1\dots\beta_m + 1/2^m)\subset [a,b)\}$
       - the length of the $\beta$ interval $1/2^m$ and at smallest $(b-a)/2$.
       - i.e. $1/2^m\leq (b-a)/2$ implies that $l(x)\leq m$
         - $1/2^{m-1}\leq b-a = \prod_{i\in x} p_i = p^1(x)$
@@ -964,7 +964,7 @@ output:
           - rescaling and subdividing commutes
           - if both $a$ and $b$ are close to 0.5, then we zoom in until either $a<1/4$ or $b>3/4$ - and emit $011\dots$ or $100\dots$ as necessary ($s$ counter)and continue loop
         - algorithm is now as follows:
-          - $a:= 0$, $b:=1$, s:=0$
+          - $a:= 0$, $b:=1$, $s:=0$
           - for $i=1,\dots,k+1$:
             - $w:= b-a$
             - $b := a + wd_{x_i}$
