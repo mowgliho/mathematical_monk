@@ -46,3 +46,86 @@ output:
 - Generative: Model the joint distribution $\mathbb{P}(x,y)$
 - can use generative to discriminate by comparing probabilities
 - creating generative models takes a lot of data, have to estimate things, etc, so often discriminative models are better - and more appropriate to the problem at hand.
+
+# 1.6: $k$-Nearest Neighbor classification algorithm
+
+- Given data $(x_i, y_i)$, $x_i\in \mathbb{R}^d$, $y_i\in \{0,1\}$, classify a new $x$
+- $kNN$: by a majority vote of the $k$ nearest points.
+- Distance given by, for example, the euclidean distance
+- often works pretty well, has some nice theoretical guarantees as $n$ grows large
+- probabilistic interpretation: $p(y)$ is the fraction of points among the $k$ nearest neighbors with label $y$, and we select the $y$ that maximizes this probability.
+  - this is a discriminative model
+- $k$ is a parameter, so we can select via cross-validation, bias variance tradeoff, etc.
+
+# 2.1: Classification trees (CART)
+
+- Decision trees are very simple, but can have pretty good performance (especially paired with randomization)
+- Classification trees
+  - main idea is to form a binary tree and minimize the error in each leaf of the tree
+    - nodes are either 
+      - a question/decision 
+      - a leaf (which we can mark with the amount of each class in that leaf)
+        - classify by majority vote at the leaf
+
+# 2.2: Regression trees (CART)
+
+- Regression tree
+  - again, make a binary tree and minimize error in each leaf
+    - for example, split on $x \leq r$, i.e. separate $x$-axis piecewise
+      - put a constant model in each leaf (e.g. the average)
+    - e.g. error as square error over all $y$'s
+    - get a piecewise constant function
+
+# 2.3: Growing a regression tree (CART)
+
+- note that the $x$ can be real valued, discrete, or even unordered
+- Growing a tree
+  - Greedy: At each step, choose the optimal decision
+    - may not get globally optimal tree
+    - for example, if $x_i\in \mathbb{R}^d$, we find $s$ and $j$ to minimize the prediction as the minimum $y$ for each part:
+      - $\min_y\sum_{i:x_{ij}>s}(y-y_i)^2 + \min_y\sum_{i:x_{ij}\leq s}(y-y_i)^2$
+      - as we have a finite number of data points, we have in essence a finite number of split points
+      - and repeat
+    - how do we stop:
+      - otherwise we end up with one point $x$ per leaf
+      - only consider splits with regions with at least $n$ points
+      - or something else
+- we can prune afterwards or do something like random forest afterwards
+
+# 2.4: Growing a classification tree (CART)
+
+- suppose that the points are in $\mathbb{R}^d$, classified into classes
+- given a subregion $R$, we classify by a majority/plurality vote
+  - define $E_R = \min_y(1/N_R)\sum_{i: x_i\in R} I(y_i\neq y)$, 
+    - $N_R$ is the number of train points in $R$
+    - $I$ is the indicator function
+  - define $R(j,s)$ to be $\{x_i: x_{ij} > s\}$, $R'(j,s)=\{x_i:x_{ij}\leq s\}$, i.e. the point sets defined by a split
+- To grow a classification tree, choose a dimension $j$ and a split $s$ to minimize
+  - $E_{R(j,s)} + E_{R'(j,s)}$
+  - and repeat
+- stop when 
+  - number of points reach a minimum
+  - $R_k$ contains points of only one class
+  - or something else
+- could also try to minimize entropy/gini index instead
+
+# 2.5: Generalizations for trees (CART)
+
+- impurity measures for classification:
+  - $E_R$: the proportion of stuff that would be misclassified (which we used before)
+  - $H_R$: entropy, i.e. if we define $p_R(y)$ to be the fraction of points in $R$ with class $y$
+    - $H_R = -\sum_{y\in\mathcal{Y}} p_R(y)\log p_R(y)$
+    - entropy for $R$ with all in one class is $0$
+    - We want to find a split to make it as homogeneous as possible
+  - $G_R$: Gini index, i.e.
+    - $G_R = \sum_{y\in\mathcal{Y}} p_R(y) (1-p_R(y))$
+    - has some nice analytic properties
+- $H_R$ and $G_R$ can have some better performance
+- more generalizations/topics:
+  - the notion of a split if if the $x_i$ are categorical, so that splitting doesn't strictly make sense
+  - use a loss matrix for loss instead
+  - missing values: recommended solution is "surrogate variables"
+  - splits on linear combinations instead of a coordinate
+    - but this is less efficient and surprisingly doesn't really give better performance
+      - especially with the upcoming aggregation techniques
+  - instability: estimator can have high variance, so has low performance in general
