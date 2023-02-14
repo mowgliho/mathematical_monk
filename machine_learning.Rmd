@@ -183,3 +183,67 @@ output:
   - Then do the aggregation as before on these $B$ trees $T_i$: majority vote (classification), average of probabilities (classification), average of predictions (regression)
 - works for the same reason that bootstrapping works
   - each tree has high variance, but boostrapping reduces the variance
+
+# 3.1: Decision Theory (Basic Framework)
+
+- Decision Theory: minimize expected loss
+- Loss Matrix:
+  - e.g., look at FP, TP, FN, TN table, each has a loss
+  - Define a loss function $L(y,\hat{y})$
+    - "0-1 loss": $L(y,\hat{y}) = I(y\neq \hat{y})$, $I$ being the indicator function
+    - "Square loss": $L(y,\hat{y}) = (y-\hat{y})^2$
+- General Framework
+  - State $s$ (true/unknown)
+  - Have an observation (known)
+  - take an action $a$
+  - get a loss $L(s,a)$
+- note that we can do the opposite and do "reward/utility" instead
+
+# 3.2: Minimizing conditional expected loss
+
+- Decision theory for supervised learning
+  - Setup
+    - Data $\{(x_i,y_i)\}$
+  - Possible Situation 1:
+    - get a new $x$, predict $\hat{y}$ for the true $y$
+    - given $x$, we want to pick $y$ to minimize loss $L(y,\hat{y})$
+    - but we don't know the true $y$
+  - Possible Situation 2:
+    - choose $f$ to minimize $L(y,f(x))$, but we don't know $x$ or $y$
+    - i.e. choose a general function to minimize the $x$ that may come
+- We move to Probabilistic framework: Want small loss on average
+  - Data comes as $(X,Y)$, where $X$ and $Y$ are random variables according to $p$
+    - for now, we assume that they are discrete
+  - Possible Situation 1 now turns into minimizing 
+    - $\mathbb{E}(L(Y, \hat{y})|X = x) = \sum_{y\in\mathcal{Y}}L(y,\hat{y})p(y|x)$
+    - e.g. for 0-1 loss, we get $\sum_{y\neq \hat{y}}p(y|x) = 1 - p(\hat{y}|x)$
+      - so we should pick $\hat{y}$ to maximize $p(\hat{y}|x)$
+      - i.e. minimizing the expected 0-1 loss tells us to predict the most likely $y$
+
+# 3.3: Choosing $f$ to minimize expected loss
+
+- Now let's look at Possible Situation 2 from above
+  - $\hat{y} = f(x)$
+  - $\mathbb{E}(L(Y,\hat{Y})) = \mathbb{E}(L(Y,f(x))) = \sum_{x,y} L(y,f(x))p(x,y) = \sum_{x,y}L(y,f(x))p(y|x)p(x) = \sum_xp(x)\sum_yL(y,f(x))p(y|x)$
+  - setting $g(x,f(x)):= \sum_y L(y,f(x))p(y|x)$, this turns into the expectation $\mathbb{E}^Xg(X,f(X))$ over the distribution $p(x)$.
+  - Suppose for some $x',t$, $g(x',f(x') > g(x',t)$.
+    - define $f_0(x)$ to be $f(x)$ if $x\neq x'$, and $t$ if $x = x'$
+    - then $g(x,f(x))\geq g(x,f_0(x))$
+    - in particular, $\mathbb{E}^X(g,X,f(X)) \geq \mathbb{E}^X(g(X,f_0(X))$
+      - in other words to minimize the loss, we should choose $f$ to minimize $g(x,f(x))$, i.e. $argmin_t g(x,t)$
+  - The minimization problem for situation 2 reduces to many cases of the minimization problem for situation 1
+    - the fact that we don't know $x$ yet doesn't really matter
+    - more important is $p(y|x)$
+
+# 3.4: Square Loss
+
+- Consider the square loss $L(y,\hat{y}) = (y-\hat{y})^2$, with $X,Y$ given by $p$
+  - no longer discrete, suppose that $p$ is a smooth and has a derivative
+  - $\mathbb{E}(L(Y,\hat{y})|X=x) = \int L(y,\hat{y})p(y|x)dy = \int(y-\hat{y})^2p(y|x)dy$
+  - take the derivative wrt $\hat{y}$ and set to 0
+    - $0 = \int 2(\hat{y}-y)p(y|x)dy = 2\hat{y} \int p(y|x)dy - 2\int yp(y|x)dy$ = 2\hat{y} - 2\mathbb{E}(Y|X=x)$
+    - $\hat{y} = \mathbb{E}(Y|X=x)$
+    - if we take another derivative, we note that it is positive $2$, so that we've found a minimum
+  - in other words, the prediction at $x$ to minimize the expected square loss is the expectation of $Y$ given $x$
+    - this is a nice property of the square loss
+- the solution to the minimum problem for the square loss is to set $f(x):=\mathbb{E}(Y|X=x)$, i.e. the expectation of $Y$ given $x$ at each $x$
