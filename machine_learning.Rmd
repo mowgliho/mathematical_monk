@@ -129,3 +129,57 @@ output:
     - but this is less efficient and surprisingly doesn't really give better performance
       - especially with the upcoming aggregation techniques
   - instability: estimator can have high variance, so has low performance in general
+
+# 2.6: Bootstrap Aggregation (Bagging)
+
+- take a simple algorithm and make it better (not always, but quite often)
+- reduces the variation of a classification or regression procedure
+- here, we do regression
+- Given
+  - Data $D = (X_i,Y_i)$, distributed by $P$ iid, the $X$ and $Y$ are random variables
+  - Want to predict the $y$ for an $x$
+- If we had a bunch of data sets $D_i$, each gives a model to predict $x$
+  - if each dataset is drawn from $P$, then the average of the $y$s will be pretty good as an estimate as the true $y$
+  - $D_i = (X^i_j,Y^i_j)$, as $j$ ranges
+  - suppose that we have an "unbiased" estimator, i.e. the mean of $Y_j$ is the true $Y$, i.e. $\mathbb{E}Y=y=f(x)$
+  - $\mathbb{E}((Y-y)^2) = E((Y-\mathbb{E}(Y))^2) := \sigma^2(Y)$
+  - define $z = (1/m)\sum_1^m Y^i$, then $\mathbb{E}(z)=y$, so $z$ is also an unbiased estimator of $y$
+    - i.e. if we use the empirical distribution
+  - Then $\mathbb{E}((Z-y)^2) = \mathbb{E}((z-\mathbb{E}(z))^2) = \sigma^2(z)=\sigma^2((1/m)\sum Y^i) = (1/m)^2\sigma^2(\sum Y^i) = (1/m^2)\sum(\sigma^2(Y^i)) = (1/m) \sigma^2(y)$
+    - in other words, our expected loss from using $z$ to estimate is $(1/m) \sigma^2(y)$, 
+      - i.e. the original estimator divided by $m$
+      - so as we take $m$ to infinity, the expected loss goes to 0
+- Unfortunately, we don't have a bunch of different datasets
+  - but we can simulate this by sampling from our dataset
+  - e.g. draw uniformly from the original dataset $D$, iid, with replacement
+
+# 2.7: Bagging for classification
+
+- natural extensions of previous one
+  - majority vote of models (each dataset gives us a classifier $C_i$)
+  - average the estimated probabilities from each classifier: each $C_i$ gives us an estimated pmf $p^i$, and then we do $p(y) = (1/m)\sum_i p^i(y)$
+    - similar to the regression problem from before where we try to estimate the true probability of $y$
+      - same analysis holds if the $p^i$ are unbiased - so $p$ is a unbiased estimator
+    - and then classify $x$ as the $y$ with the highest $p(y)$ for $x$
+  - suppose that the output follows a random distribution $W$, which is independent from $Y$ (the realizations in the form of data)
+    - then we want to minimize $\mathbb{E}((Y-W)^2) = \mathbb{E}((Y-\mathbb{E}(Y) + \mathbb{E}(Y) - W)^2)$
+    - then this is $\mathbb{E}((Y-\mathbb{E}(Y))^2) + \mathbb{E}((\mathbb{E}(Y) - W)^2)$
+      - note that we used independentness to get rid of a few terms
+    - $\geq \mathbb{E}((\mathbb{E}(Y)-W)^2)$
+    - in other words, using $\mathbb{E}(Y)$ instead of $Y$ reduces expected error
+    - as before, we can approximate $\mathbb{E}(Y)$ with $z$, i.e. the data that we have - and reduce randomness again
+  - i.e. more rationalization of the bagging algorithm
+
+# 2.8: Random forests
+
+- Combination of CART trees and bagging - and "random subspace"
+- Simple idea, but somehow state of the art performance
+- Random Forests:
+  - We have some observed data points $D = ((x_1,y_1),\dots,(x_n,y_n))$
+  - for $i = 1,\dots,B$, create a bootstrap data $D_i$ from $D$ via sampling with replacement
+  - construct a tree $T_i$ using $D_i$ s.t.
+    - at each node, choose a random subset of the features (e.g. dimensions of $x_i$)
+    - only consider splits on those features (this is the "random subspace")
+  - Then do the aggregation as before on these $B$ trees $T_i$: majority vote (classification), average of probabilities (classification), average of predictions (regression)
+- works for the same reason that bootstrapping works
+  - each tree has high variance, but boostrapping reduces the variance
