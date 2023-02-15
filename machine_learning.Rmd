@@ -64,8 +64,7 @@ output:
   - main idea is to form a binary tree and minimize the error in each leaf of the tree
     - nodes are either 
       - a question/decision 
-      - a leaf (which we can mark with the amount of each class in that leaf)
-        - classify by majority vote at the leaf
+      - a leaf: classify by majority vote at the leaf
 
 # 2.2: Regression trees (CART)
 
@@ -247,3 +246,55 @@ output:
   - in other words, the prediction at $x$ to minimize the expected square loss is the expectation of $Y$ given $x$
     - this is a nice property of the square loss
 - the solution to the minimum problem for the square loss is to set $f(x):=\mathbb{E}(Y|X=x)$, i.e. the expectation of $Y$ given $x$ at each $x$
+
+# 3.4: The Big Picture (part 1)
+
+- Specifically focusing on supervised learning, but the concepts generalize
+- many of the core concepts of machine learning come from trying to minimizing $\mathbb{E}(L,Y,f(X))$
+- $p(y|x)$, not $p(x)$ was key to minimizing expected loss
+  - Discriminative methods: Estimate $p(y|x)$ directly using data $D$
+    - e.g. kNN, Trees, SVM
+    - easier to compute
+  - Generative methods: Estimate the joint distribution $p(y,x)$ and then recover $p(y|x) = p(x,y)/p(x)$
+    - harder to compute, but are a richer family
+- parameters/latent variables: we note as $\theta$. We can think of it as a random variable and consider $p(x,y|\theta)$
+- we can also think of the data as being random: $p(y|x,D) = \int_\theta p(y|theta,x,D)p(\theta|x,D)d\theta
+  - i.e. integrate over possible parameters $\theta$
+  - $p(y|x,D,\theta)$ is typically nice, can get a defined/analytic model
+  - $p(\theta|x,D)$ is nasty: usually can't get a closed form expression, and the integral sucks too.
+  - this problem often intractable
+
+# 3.5: The Big Picture (part 2)
+
+- notation:
+  - $p(y|x,D)$ is the "predictive distribution" on $y$
+  - $p(\theta|x,D)$ is the "posterior distribution$ on $\theta$
+- approaches to solve the intractable problem from before
+  - Exact inference: assume a nice enough model that has nice distributions
+    - Multivariate Gaussian, Conjugate prior, Graphical models
+  - Point estimates of $\theta$: 
+    - e.g. 
+      - MLE: $\theta_{MLE} = \arg\max_\theta \mathcal{L}(\theta|y)$, where $\mathcal{L}$ is the likelihood function
+      - MAP: $\theta_{MAP} = \arg\max_\theta p(\theta | x,D)$
+    - then estimate $p(y|x,D)\approx p(y|x,D,\theta)$
+    - to solve for $\theta$, may need to use optimization techniques or expectation maximization
+    - Empirical Bayes kind of fits in here too
+  - Deterministic Approximations of the integral
+    - Laplace Approximation, Variational methods, Expectation Propagation
+  - Stochastic Approximations
+    - Markov Chain Monte Carlo (Gibbs, Metropolis-Hastings), Importance Sampling
+- many methods combine these techniques
+
+# 3.6: The Big Picture (part 3)
+
+- Extensions of methods above to unsupervised learning
+- Density Estimation (Unsupervised)
+  - $D = (x_1,\dots,x_n)$, $x_i\in \mathbb{R}^d$, iid
+  - Goal is to estimate the density of the $x$
+  - given parameters $\theta$, we can have a probability distribution $p_\theta$ that generates the $x_i$
+  - we want to calculate $p(x|D) = \int p(x|D,\theta)p(\theta|D)d\theta$
+    - it turns out that we can reduce to $p(x|\theta,D) = p(x|\theta)$
+    - $p(\theta|D)$ is the posterior of $\theta$ given $D$
+  - same problem as before, and we can apply the same types of methods as before:
+    - $p(x|\theta)$ is nice: just the model
+    - $p(\theta|D)$ and the integral are not nice.
