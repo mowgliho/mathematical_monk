@@ -70,7 +70,8 @@ output:
 
 - Regression tree
   - again, make a binary tree and minimize error in each leaf
-    - for example, split on $x \leq r$, i.e. separate $x$-axis piecewise
+    - for example
+      - split on $x \leq r$, i.e. separate $x$-axis piecewise
       - put a constant model in each leaf (e.g. the average)
     - e.g. error as square error over all $y$'s
     - get a piecewise constant function
@@ -83,6 +84,7 @@ output:
     - may not get globally optimal tree
     - for example, if $x_i\in \mathbb{R}^d$, we find $s$ and $j$ to minimize the prediction as the minimum $y$ for each part:
       - $\min_y\sum_{i:x_{ij}>s}(y-y_i)^2 + \min_y\sum_{i:x_{ij}\leq s}(y-y_i)^2$
+        - $y$ is the prediction for each part
       - as we have a finite number of data points, we have in essence a finite number of split points
       - and repeat
     - how do we stop:
@@ -229,7 +231,7 @@ output:
     - define $f_0(x)$ to be $f(x)$ if $x\neq x'$, and $t$ if $x = x'$
     - then $g(x,f(x))\geq g(x,f_0(x))$
     - in particular, $\mathbb{E}^X(g,X,f(X)) \geq \mathbb{E}^X(g(X,f_0(X))$
-      - in other words to minimize the loss, we should choose $f$ to minimize $g(x,f(x))$, i.e. $argmin_t g(x,t)$
+      - in other words to minimize the loss, we should choose $f$ to minimize $g(x,f(x))$, i.e. $\arg\min_t g(x,t)$
   - The minimization problem for situation 2 reduces to many cases of the minimization problem for situation 1
     - the fact that we don't know $x$ yet doesn't really matter
     - more important is $p(y|x)$
@@ -250,25 +252,26 @@ output:
 # 3.4: The Big Picture (part 1)
 
 - Specifically focusing on supervised learning, but the concepts generalize
-- many of the core concepts of machine learning come from trying to minimizing $\mathbb{E}(L,Y,f(X))$
+- many of the core concepts of machine learning come from trying to minimizing $\mathbb{E}(L(Y,f(X)))$
 - $p(y|x)$, not $p(x)$ was key to minimizing expected loss
   - Discriminative methods: Estimate $p(y|x)$ directly using data $D$
     - e.g. kNN, Trees, SVM
     - easier to compute
   - Generative methods: Estimate the joint distribution $p(y,x)$ and then recover $p(y|x) = p(x,y)/p(x)$
     - harder to compute, but are a richer family
-- parameters/latent variables: we note as $\theta$. We can think of it as a random variable and consider $p(x,y|\theta)$
-- we can also think of the data as being random: $p(y|x,D) = \int_\theta p(y|theta,x,D)p(\theta|x,D)d\theta
+- parameters/latent variables: we denote as $\theta$. We can think of it as a random variable and consider $p(x,y|\theta)$
+- we can also think of the data as being random: $p(y|x,D) = \int_\theta p(y|\theta,x,D)p(\theta|x,D)d\theta$
   - i.e. integrate over possible parameters $\theta$
   - $p(y|x,D,\theta)$ is typically nice, can get a defined/analytic model
-  - $p(\theta|x,D)$ is nasty: usually can't get a closed form expression, and the integral sucks too.
+  - $p(\theta|x,D)$ is nasty: usually can't get a closed form expression
+  - the integral sucks too.
   - this problem often intractable
 
 # 3.5: The Big Picture (part 2)
 
 - notation:
   - $p(y|x,D)$ is the "predictive distribution" on $y$
-  - $p(\theta|x,D)$ is the "posterior distribution$ on $\theta$
+  - $p(\theta|x,D)$ is the "posterior distribution on $\theta$
 - approaches to solve the intractable problem from before
   - Exact inference: assume a nice enough model that has nice distributions
     - Multivariate Gaussian, Conjugate prior, Graphical models
@@ -298,3 +301,37 @@ output:
   - same problem as before, and we can apply the same types of methods as before:
     - $p(x|\theta)$ is nice: just the model
     - $p(\theta|D)$ and the integral are not nice.
+
+# 4.1: Maximum Likelihood Estimation (MLE) (part 1)
+
+- Setup:
+  - Given data $D = (x_1,dots,x_n)$, $x_i\in \mathbb{R}^d$
+  - assume a set of distributions $\{p_\theta:\theta \in\Theta\}$ on $\mathbb{R}^d$
+  - Assume that $D$ is an iid sample according to $p_\theta$ for some $\theta\in\Theta$
+- Goal: Estimate the true value of $\theta$ that generated the data
+- Definition: $\theta_{MLE}$ is a MLE for $\theta$ if $\theta_{MLE}=\arg\max_\theta p(D|\theta)$
+  - more precisely, it maximizes $p(D|\theta_{MLE}) = \max_\theta p(D|\theta)$, as there can br multiple $\theta$ that maximize it in theory.
+  - The likelihood $p(D|\theta) = \prod_1^n p(x_i|\theta)$, as they are iid.
+- Remark:
+  - MLE may not be unique
+  - MLE may fail to exist (e.g. maximum of $p(D|\theta)$ may not be achieved for $\theta \in \Theta$
+- Pros:
+  - Easy to compute
+  - interpretable
+  - has some nice asymptotic properties:
+    - consistent: as $n$ goes to infinity, it converges to the true $\theta$
+    - normal: as $n$ goes to infinity, the distrubution of $\theta$ is normal
+    - efficient: it's the best possible estimate for the true $\theta$ because it has the lowest asymptotic variance/error
+  - invariant under reparameterization of $\theta$: $g(\theta_{MLE}$ is the MLE for $g(\theta)$ for some function $g$
+- Cons:
+  - Point estimate, so has no representation of uncertainty (i.e. we don't consider $p(\theta|D)$
+    - for example, perhaps the likelihood spikes to a high maximum, but has a larger/more probable distribution elsewhere
+
+# 4.2: Maximum Likelihood Estimation (MLE) (part 2)
+
+- more cons of MLE
+  - Overfitting
+    - regression: e.g. curvy line when straight line is better
+    - black swan paradox: give 0 probability to stuff not in data
+  - Wrong objective? e.g. MLE disregards the loss function
+  - Existence and Uniqueness is not guaranteed
