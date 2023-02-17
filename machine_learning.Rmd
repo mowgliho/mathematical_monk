@@ -227,10 +227,10 @@ output:
   - $\hat{y} = f(x)$
   - $\mathbb{E}(L(Y,\hat{Y})) = \mathbb{E}(L(Y,f(x))) = \sum_{x,y} L(y,f(x))p(x,y) = \sum_{x,y}L(y,f(x))p(y|x)p(x) = \sum_xp(x)\sum_yL(y,f(x))p(y|x)$
   - setting $g(x,f(x)):= \sum_y L(y,f(x))p(y|x)$, this turns into the expectation $\mathbb{E}^Xg(X,f(X))$ over the distribution $p(x)$.
-  - Suppose for some $x',t$, $g(x',f(x') > g(x',t)$.
+  - Suppose for some $x',t$, $g(x',f(x')) > g(x',t)$.
     - define $f_0(x)$ to be $f(x)$ if $x\neq x'$, and $t$ if $x = x'$
     - then $g(x,f(x))\geq g(x,f_0(x))$
-    - in particular, $\mathbb{E}^X(g,X,f(X)) \geq \mathbb{E}^X(g(X,f_0(X))$
+    - in particular, $\mathbb{E}^X(g,X,f(X)) \geq \mathbb{E}^X(g(X,f_0(X)))$
       - in other words to minimize the loss, we should choose $f$ to minimize $g(x,f(x))$, i.e. $\arg\min_t g(x,t)$
   - The minimization problem for situation 2 reduces to many cases of the minimization problem for situation 1
     - the fact that we don't know $x$ yet doesn't really matter
@@ -242,7 +242,7 @@ output:
   - no longer discrete, suppose that $p$ is a smooth and has a derivative
   - $\mathbb{E}(L(Y,\hat{y})|X=x) = \int L(y,\hat{y})p(y|x)dy = \int(y-\hat{y})^2p(y|x)dy$
   - take the derivative wrt $\hat{y}$ and set to 0
-    - $0 = \int 2(\hat{y}-y)p(y|x)dy = 2\hat{y} \int p(y|x)dy - 2\int yp(y|x)dy$ = 2\hat{y} - 2\mathbb{E}(Y|X=x)$
+    - $0 = \int 2(\hat{y}-y)p(y|x)dy = 2\hat{y} \int p(y|x)dy - 2\int yp(y|x)dy = 2\hat{y} - 2\mathbb{E}(Y|X=x)$
     - $\hat{y} = \mathbb{E}(Y|X=x)$
     - if we take another derivative, we note that it is positive $2$, so that we've found a minimum
   - in other words, the prediction at $x$ to minimize the expected square loss is the expectation of $Y$ given $x$
@@ -314,7 +314,7 @@ output:
   - The likelihood $p(D|\theta) = \prod_1^n p(x_i|\theta)$, as they are iid.
 - Remark:
   - MLE may not be unique
-  - MLE may fail to exist (e.g. maximum of $p(D|\theta)$ may not be achieved for $\theta \in \Theta$
+  - MLE may fail to exist (e.g. maximum of $p(D|\theta)$ may not be achieved for $\theta \in \Theta$)
 - Pros:
   - Easy to compute
   - interpretable
@@ -322,9 +322,9 @@ output:
     - consistent: as $n$ goes to infinity, it converges to the true $\theta$
     - normal: as $n$ goes to infinity, the distrubution of $\theta$ is normal
     - efficient: it's the best possible estimate for the true $\theta$ because it has the lowest asymptotic variance/error
-  - invariant under reparameterization of $\theta$: $g(\theta_{MLE}$ is the MLE for $g(\theta)$ for some function $g$
+  - invariant under reparameterization of $\theta$: $g(\theta_{MLE})$ is the MLE for $g(\theta)$ for some function $g$
 - Cons:
-  - Point estimate, so has no representation of uncertainty (i.e. we don't consider $p(\theta|D)$
+  - Point estimate, so has no representation of uncertainty (i.e. we don't consider $p(\theta|D)$)
     - for example, perhaps the likelihood spikes to a high maximum, but has a larger/more probable distribution elsewhere
 
 # 4.2: Maximum Likelihood Estimation (MLE) (part 2)
@@ -335,3 +335,46 @@ output:
     - black swan paradox: give 0 probability to stuff not in data
   - Wrong objective? e.g. MLE disregards the loss function
   - Existence and Uniqueness is not guaranteed
+
+# 4.3: MLE for univariate Gaussian mean
+
+- Remember: $\theta_{MLE} = \arg\max_\theta p(D|\theta)$
+- We assume a univariate gaussian $X \sim N(\theta,\sigma^2)$
+- $p(x|\theta) = \frac{1}{\sqrt{2\pi \sigma^2}}\exp (-\frac{1}{2\sigma^2}(x-\theta)^2)$
+- Data is $D=(x_1,\dots,x_n)$, $X_i \sim N(\theta, \sigma^2)$ iid
+- Then $p(D|\theta) = p(x_1,\dots,x_n|\theta) = \prod_1^np(x_i|\theta)$
+- If we plug in the equation for $p(x_i|\theta)$ and take the derivative
+  - note that maximizing the probability is the same as maximizing the log,
+  - so we can maximize $-\frac{n}{2}\log(2\pi\sigma^2) - \frac{1}{2\sigma^2}\sum_1^n(x_i-\theta)^2$
+  - differentiate and set to 0 w.r.t $\theta$: $0 = \frac{1}{2\sigma^2}\sum_i 2(x_i - \theta)$
+    - $n\theta = \sum_i x_i$, so $\theta = \frac{1}{n}\sum_i x_i$
+  - take the second derivative wrt $\theta$ we get $-n/\sigma^2 < 0$, so that this is a maximum
+  - thus $\theta$ is given by the average of the $x_i$'s, ie the sample mean
+- if you take the derivative wrt to $\sigma$, you obtain $\sigma^2 = \frac{\sum(x_i-\theta)^2}{n}$, i.e. the sample variance
+
+# 4.4: MLE for a PMF on a finite set (part 1)
+
+- $X \sim p$, $X\in \{1,\dots,m\}$
+  - for example, look at a die: $m = 6$
+  - Given data, the MLE finds the distribution of $p$
+- Data $D = (x_1,\dots, x_n)$, $X_1,\dots,X_n\sim p$ iid
+- We parameterize $\theta = (\theta_1,\dots,\theta_n)$, where $\theta = p_i = p(i|\theta) = p_\theta(i)$
+- We want to find the MLE $\theta_{MLE} = \arg\max_\theta p(D|\theta)$
+- $p(x|\theta) = \theta_x$, so $p(D|\theta) = \prod_i \theta_{x_i} = \prod_{i=1}^n \prod_{j=1}^m \theta_j^{I(x_i = j)} = \prod_{j=1}^m\theta_j^{\sum_{i=1}^mI(x_i=j)} = \prod_{j=1}^m \theta_j^{n_j}$
+  - $n_j$ is the number of $j$s in the data
+- to maximize $p(D|\theta)$, we can take the log, so we want to maximize $\sum_{j=1}^m n_j\log \theta_j$
+- we can also max if we divided by $n$, i.e. $\sum_{j=1}^m \frac{n_j}{n}\log \theta_j$
+
+# 4.5: MLE for a PMF on a finite set (part 2)
+
+- continuing from last time
+- set $q_j = n_j/n$
+  - note that $\sum_j q_j = 1$
+- Now consider relative entropy or Kullback-Leibler divergence, $D(\theta ||q)$
+  - $D(\theta ||q) = \sum_{j=1}^m q_j \log (q_j/\theta_j)$
+  - $D(\theta ||q) \geq 0$ and is $0$ iff $\theta = q$
+- we are trying to maximize $\sum_{j=1}^m q_j \log \theta_j = \sum_{j=1}^m q_j \log(\theta_j/q_j) + \sum_{j=1}^m q_j\log q_j = -D(\theta || q) - H(q)$
+  - As $H(q)$ is unaffected by $\theta$, this is maximized when $\theta = q$, 
+- $\theta_{MLE} = (\theta_1,\dots,\theta_n)$, where $\theta_j = n_j/n$, or the proportion of the data that is $j$
+  - i.e. the empirical distribution
+ 
