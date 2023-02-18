@@ -305,12 +305,12 @@ output:
 # 4.1: Maximum Likelihood Estimation (MLE) (part 1)
 
 - Setup:
-  - Given data $D = (x_1,dots,x_n)$, $x_i\in \mathbb{R}^d$
+  - Given data $D = (x_1,\dots,x_n)$, $x_i\in \mathbb{R}^d$
   - assume a set of distributions $\{p_\theta:\theta \in\Theta\}$ on $\mathbb{R}^d$
   - Assume that $D$ is an iid sample according to $p_\theta$ for some $\theta\in\Theta$
 - Goal: Estimate the true value of $\theta$ that generated the data
 - Definition: $\theta_{MLE}$ is a MLE for $\theta$ if $\theta_{MLE}=\arg\max_\theta p(D|\theta)$
-  - more precisely, it maximizes $p(D|\theta_{MLE}) = \max_\theta p(D|\theta)$, as there can br multiple $\theta$ that maximize it in theory.
+  - more precisely, it maximizes $p(D|\theta_{MLE}) = \max_\theta p(D|\theta)$, as there can be multiple $\theta$ that maximize it in theory.
   - The likelihood $p(D|\theta) = \prod_1^n p(x_i|\theta)$, as they are iid.
 - Remark:
   - MLE may not be unique
@@ -378,3 +378,38 @@ output:
 - $\theta_{MLE} = (\theta_1,\dots,\theta_n)$, where $\theta_j = n_j/n$, or the proportion of the data that is $j$
   - i.e. the empirical distribution
  
+# 5.1: Exponential Families (part 1/2)
+
+- many common distributions are cases of exponential families
+- have some nice properties
+- Definition: An exponential family is a set $\{p_\theta: \theta \in \Theta\}$ of pmfs or pdfs on $\mathbb{R}^d$ such that $p_\theta(x) = \exp (\sum_{i=1}^m\eta_i(\theta)s_i(x))h(x)/z(\theta)$ where:
+  - $\theta\in\mathbb{R}^k$: parameter
+  - $x\in\mathbb{R}^d$: input
+  - $\eta_i:\Theta \rightarrow\mathbb{R}$: a function of the parameters
+  - $s_i:\mathbb{R}^d\rightarrow\mathbb{R}$: "sufficient statistics"
+  - $h:\mathbb{R}^d\rightarrow[0,\infty)$: support/scaling of the distribution
+  - $z:\Theta\rightarrow[0,\infty)$: "partition function", normalizing constant
+- in vector form: $p_\theta(x) = \exp(\eta(\theta)^Ts(x)) h(x)/z(\theta)$
+- Examples
+  - Exponential distribution: $\theta > 0$, $p_\theta(x)=\theta e^{-\theta x}I(x\geq 0)$
+    - $\eta(\theta) = \theta$, $s(x) = -x$, $h(x)=I(x\geq 0)$, $z(\theta)=1/\theta$
+    - $\Theta = (0,\infty)\subset \mathbb{R}$, $k=1$, $d=1$
+  - Bernoulli distribution: $p_\theta(x) = \theta^{I(x = 1)}(1-\theta)^{I(x = 0)}$, $x\in \{0,1\}$ (0 otherwise), $\theta\in (0,1)$
+    - this is equal to $\exp\log(\theta^{I(x = 1)}(1-\theta)^{I(x = 0)}) = \exp(I(x=1)\log\theta + I(x=0)\log(1-\theta))$
+      - $\eta_1(\theta) = \log(\theta)$, $\eta_2(\theta)=\log(1-\theta)$, $s_1(x) = I(x=1)$, $s_2(x) = I(x = 0)$, $h(x) = I(x\in\{0,1\})$ $z(\theta) = 1$
+    - we can also write as $p_\theta(x) = h(x)\theta^{I(x=1)}(1-\theta)^{1-I(x=1)}$
+      - or $(1-\theta)(\theta/(1-\theta))^{I(x=1)}h(x)$
+      - do $\exp\log$, get $h(x)(1-\theta)\exp(I(x=1))\log(\theta/(1-\theta))$
+      - $\eta(\theta)=\log(\theta/(1-\theta))$, $s(x)=I(x=1)$, $z(\theta)=1/(1-\theta)$
+    - in other words, we can also write it in a different way, with a different number of functions
+- We say that it is in "natural" or "canonical" form if $\eta(\theta) = \theta$, i.e. $\eta_i(\theta)=\theta_i$ for $i = 1,\dots,m$ (the projection of $\theta \in \mathbb{R}^k$ to one dimension)
+  - Turns out that all exponential families can be put into canonical form
+- Other examples of Exponential Families
+  - PDF: Exponential, Normal, Beta, Gamma, $\chi^2$
+  - PMF: Bernoulli, Binomial, Poisson, Geometric, Multinomial
+- Exponential families
+  - always have conjugate priors
+  - arise as solutions to maximum entropy problems
+- Exponential of a non-exponential family: The uniform distribution on $(0,\theta)$
+  - support depends on $\theta$ not $x$
+  - note that if we consider $\theta$ to be a constant (i.e. not a parameter), this can trivially be put into exponential family form.
