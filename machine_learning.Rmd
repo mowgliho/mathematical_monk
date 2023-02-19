@@ -453,3 +453,44 @@ output:
       - $-1/\theta = \mathbb{E}_\theta s(x) = (1/n)\sum_{i=1}^n(-x_i)$
       - $1/\theta = (1/n)\sum_{i=1}^n x_i$
       - $\theta_{MLE} = \frac{1}{\frac{1}{n}\sum_{i=1}^n x_i}$
+
+# 6.1: Maximum a posteriori (MAP) estimation
+
+- Setup
+  - data $D=(x_1,\dots,x_n)$, $x_i\in \mathbb{R}^d$
+  - assume a joint distribution $p(D,\theta)$, $\theta$ as a random variable
+    - can factorize as $p(D|\theta)p(\theta)$, where $p(\theta)$ is the prior
+  - Goal: choose a value of $\theta_{MAP}$ for $D$ that satisfies $\arg\max_\theta p(\theta|D)$- $\theta_{MLE} = \arg\max_\theta p(D|\theta)$
+- MLE maximimizes the likelihood, MAP maximizes the posterior distribution
+- MAP Pros
+  - Easy to compute
+  - interpretable
+  - Avoids overfitting: "Regularization"/"Shrinkage"
+  - Tends to look like the MLE asymptotically
+    - eventually, your priors get overwhelmed by your data
+- MAP Cons
+  - Point estimate: no representation of uncertainty in $\theta$
+  - not invariant under reparameterization
+    - if $\tau = g(\theta)$, then $\tau_{MLE} = g(\theta_{MLE})$: this doesn't hold for MAP
+  - Must assume a prior distribution on $\theta$
+
+# 6.2: MAP for univariate Gaussian mean
+
+- Data $D = (x_1,\dots,x_n)$, $x_i\in\mathbb{R}$
+- Suppose $\theta$ is a random variable distributed normally with unit variance: $N(\mu,1)$
+- $X_1,\dots,X_n$ are conditionally independent given $\theta$ and distributed as $N(\theta,\sigma^2)$
+  - we assume $\sigma^2$ is known.
+  - $p(D|\theta) = \prod_{i=1}^n p(x_i|\theta)$
+- $\theta_{MAP} = \arg\max_\theta p(\theta|D) = \arg\max_\theta p(\theta|D)p(\theta)/p(D) = \arg\max p(\theta|D)p(\theta) = \arg\max_\theta (\log p(D|\theta) + \log p(\theta))$
+- take the derivative, set to 0
+  - $0 = \frac{1}{\sigma^2}(\sum_{i=1}^n x_i - n\theta) + (\mu - \theta)$
+  - $\theta = (\frac{1}{\sigma^2}\sum x_i + \mu)/(n/\sigma^2 + 1) = \frac{\sum x_i \mu\sigma^2}{n + \sigma^2} = \frac{n}{n+\sigma^2}\bar{x} + \frac{\sigma^2}{n+\sigma^2}\mu$
+- verify that the second deriative is negative
+- so the new estimate is a convex combination of the sample mean $\bar{x}$ and the prior mean $\mu$
+
+# 6.3: Interpretation of MAP as convex combination
+
+- from before, the MAP is a convex combination of the sample mean $\bar{x}$ and the prior mean $\mu$ for the univariate Gaussian mean
+  - as we get more data, we lean towards the sample mean $\bar{x}$ (the MLE estimate)
+  - with less data, we default to the prior mean $\mu$
+- this happens often with the MAP: that it is a convex combination of the prior and the MLE
