@@ -460,7 +460,10 @@ output:
   - data $D=(x_1,\dots,x_n)$, $x_i\in \mathbb{R}^d$
   - assume a joint distribution $p(D,\theta)$, $\theta$ as a random variable
     - can factorize as $p(D|\theta)p(\theta)$, where $p(\theta)$ is the prior
-  - Goal: choose a value of $\theta_{MAP}$ for $D$ that satisfies $\arg\max_\theta p(\theta|D)$- $\theta_{MLE} = \arg\max_\theta p(D|\theta)$
+  - Goal: choose a value of $\theta_{MAP}$ for $D$ that satisfies $\arg\max_\theta p(\theta|D)$
+  - contrast with $\theta_{MLE} = \arg\max_\theta p(D|\theta)$
+  - in practice, MAP is done by maximizing $p(D|\theta)p(\theta)/p(D)$ by Bayes rule
+    - and we drop the $p(D)$ because it doesn't change with $\theta$
 - MLE maximimizes the likelihood, MAP maximizes the posterior distribution
 - MAP Pros
   - Easy to compute
@@ -494,3 +497,117 @@ output:
   - as we get more data, we lean towards the sample mean $\bar{x}$ (the MLE estimate)
   - with less data, we default to the prior mean $\mu$
 - this happens often with the MAP: that it is a convex combination of the prior and the MLE
+
+# 7.1: Bayesian inference - A simple example
+
+- Bayesian inference: put distributions on all the things and then use rules of probability
+- Suppose Tom is going to XY University and joins the football team
+  - Coach suspects that the football field isn't actually 100 yards long
+  - Tom only has a yardstick
+    - suppose he measures $(x_1,x_2,x_3) = (101, 100.5, 101.5)$
+    - Assume that the $x_i$ are normally iid distributed $N(\theta,1)$, where $\theta$ is the true length
+    - $\theta_{MLE} = \bar{x} = 101$
+    - haven't accounted for the prior knowledge of how long football fields should be
+    - make a prior $\theta ~ N(100,1)$
+    - then $\theta_{MAP} = 100.75$
+  - apparently coach is convinced that it is shorter than 100 yards
+  - Tom considers $P(\theta < 100 | D)$
+    - so he considers the posterior $P(\theta|D) = P(D|\theta)P(\theta)/P(D)$
+      - $P(D|\theta) = \prod_i P(x_i|\theta)$
+      - turns out that $P(\theta|D)$ is also a gaussian
+    - and then can solve this problem
+  - what about $P(x|D)$, i.e. the predictive distribution
+    - $P(x|D) = \int_\theta P(x,\theta|D) d\theta = \int_\theta p(x|\theta) p(\theta|D)$ due to conditional independence
+      - this is also a gaussian, nicely
+
+# 7.2: Aspects of Bayesian inference
+
+- Bayesian Inference: Assume a prior distribution $p(\theta)$, use probability to infer the answers that we're looking for
+- Bayesian procedures: Minimize expected loss, averaging over $\theta$
+- Objective vs Subjective Bayes approach
+  - Subjective: choose a prior based on beliefs
+  - Objective: choose "non-informative" priors
+- Pros
+  - Directly answer questions
+  - Avoid pathological behaviors with frequentist approaches
+  - by using a prior, can avoid some overfitting
+  - Model selection ("Occam's razor")
+  - Admissible (not always the best, but there is no other procedure that is "always better")
+- Cons
+  - must assume a prior
+  - Exact computation can be intractable (have to take an integral over the $\theta$, etc.)
+- Priors:
+  - Non-informative
+  - Improper: techinically not a probability distribution, but we use it proportionally
+    - e.g. $\theta \in \mathbb{R}$ universally distributed, do $p(\theta) = 1$
+  - Conjugate priors: very nice to work with
+
+# 7.3: Proportionality
+
+- Notation $f\propto g$ if $g(x) = cf(x)$ for all $x$ for a $c\neq 0$
+  - also implies $g\propto f$
+- If $f$ is a pdf and $f\propto g$, then $g$ uniquely determines $f$, and $f(x) = g(x)\int_x g(x) dx$
+  - i.e. $g$ is "unnormalized", $f$ is normalized
+
+# 7.4: Conjugate priors
+
+- allow us to get posterior distributions in closed form
+- Definition: A family $\mathcal{F}$ of prior distributions $p(\theta)$ is conjugate to a likelihood $p(D|\theta)$ if the resulting posterior $p(\theta|D)$ is in $\mathcal{F}$
+- Examples:
+  - Beta is conjugate to Bernoulli: If data comes from a Bernoulli process for a parameter $\theta$, then if we parameterize $\theta$ with a Beta distribution, the posterior is also Beta.
+  - Gaussian is conjugate to Gaussian (if the $\theta$ we're considering is the mean of the distriubution)
+  - Any exponential family has a conjugate prior: so if the data comes from an exponential family source, we have a conjugate prior that we can use to get analytic posterior.
+
+# 7.5: Beta-Bernoulli model (part 1)
+
+- Sequence of binary outcomes (e.g. coin flip) modeled with Bernoulli random variables with with beta prior distribution on the probability of heads
+  - Beta is the conjugate prior for a Bernoulli
+- Setup:
+  - $X_1,\dots,X_N ~ Bern(\theta)$
+  - $\theta ~ Beta(\theta|a,b)$
+  - $P(X=1|\theta) = \theta$
+  - $p(\theta) = \theta^{a-1}(1-\theta)^{b-1}/B(a,b) \propto \theta^{a-1}(1-\theta)^{b-1}$
+  - $D = (x_1,\dots,x_n)$
+- $p(\theta|D) \propto p(D|\theta)p(\theta) = p(\theta)\prod p(x_i|\theta)$
+  - substituting, we get $\theta^{a-1}(1-\theta)^{b-1}\theta^{n_1}(1-\theta)^{n_0} = \theta^{a+n_1-1}(1-\theta)^{b+n_0-1}\propto Beta(\theta|a+n_1-1,b+n_0-1)$
+    - where $n_i$ is the number of datapoints where $x_j = i$
+  - thus $p(\theta|D)$ is also a beta distribution
+  - we are operating under the support $[0,1]$
+    - some examples of how the $a$ and $b$ affect the shape of the prior
+- If $X~Beta(a,b)$, then $\mathbb{E} X = a/(a+b)$, $\sigma^2(X) = ab/((a+b)^2(a+b+1))$, mode (maximum density) is $(a-1)/(a+b-2)$
+  - thus if $a:= a+n_1$, $b:= b+n_0$ i.e. the posterior calculated above, then we instantly get the summary statistics
+    - $\mathbb{E}X = (a+n_1)/(a+b+n)$ as $n_0 + n_1 = n$
+    - mode is $(a+n_1-1)/(a+b+n-2)$
+
+# 7.6: Beta-Bernoulli model (part 2)
+
+- With the same setup as before
+  - $\theta_{MLE}$ is the empirical distribution, i.e. $\theta_{MLE} = n_1/n$
+  - $\theta_{MAP}$ is the mode from the posterior that we calculated above: $\theta_{MAP} = (a+n_1-1)/(a+b+n-2)$
+  - $\mathbb{E}(\theta|D) = (a+n_1)/(a+b+n) = \frac{a+b}{a+b+n}\frac{a}{a+b} + \frac{n}{a+b+n}\frac{n_1}{n}$
+    - thus it's a convex combination of the prior mean and the MLE
+    - when $n$ goes to $\infty$, get the MLE; when $n$ is 0 we get the prior mean
+  - $p(x=1|D) = \int_\theta p(x=1|D,\theta)p(\theta|D)$
+    - $x$ is conditionally independent of data given $\theta$, so this becomes $\int_\theta p(X=1|\theta)p(\theta|D)$
+    - plugging in, $\int_\theta \theta Beta(\theta|a+n_1,b + n_0) = \mathbb{E}\theta = \frac{a+n_1}{a+b+n}$
+    - so we get the predictive distribution in closed form
+
+# 7.7.A1 Dirichlet distribution
+
+- Distribution on probability distributions
+- for $\theta = (\theta_1,\dots,\theta_m) = \theta ~ Dir(\alpha)$ if $p(\theta) = \frac{1}{B(\alpha)}\prod_{i=1}^m \theta_i^{\alpha_i -1} I(\theta\in S)$
+  - $\alpha = (\alpha_1,\dots,\alpha_m)$, $\alpha_i > 0$
+  - $S$ is the probability simplex given by $\{x\in \mathbb{R}^m|x_i\geq 0, \sum_i x_i = 1\}$
+  - $B(\alpha)$ is the multivariate beta function $\frac{\prod_i\Gamma(\alpha_i)}{\Gamma(\alpha_0)}$, and normalizes the distribution
+    - $\alpha_0 = \sum_i \alpha_i$
+- Is a function on the probability distribution that can take a variety of shapes on the simlex depending on the $\alpha$
+- often used as a prior on pmfs on a finite set
+  - useful for Bayesian inference
+- Useful statistics
+  - $\mathbb{E} \theta_i = \frac{\alpha_i}{\alpha_0}$, i.e. proportional to the $i$-th parameter $\alpha_i$
+  - the mode of $\theta = \big(\frac{\alpha_i-1}{a_0 -n}\big)$
+  - $\sigma^2(\theta_i) = \frac{\alpha_i(\alpha_0-\alpha_i)}{\alpha_0^2(\alpha_0+1)}$
+- If all the $\alpha_i=1$, then $p(\theta)$ is the uniform distribution on the simplex
+- If all $alpha_j=1$ for $j\neq i$, then 
+  - as we raise $\alpha_i$, $\mathbb{E}\theta_i$ goes to $1$, all others go to $0$: get some kind of hump at the $i$ corner
+  - as we lower $\alpha_i$ to $0$, then the density $Dir$ goes to infinity as $\theta_i$ goes to 0.
