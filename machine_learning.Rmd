@@ -563,8 +563,8 @@ output:
 - Sequence of binary outcomes (e.g. coin flip) modeled with Bernoulli random variables with with beta prior distribution on the probability of heads
   - Beta is the conjugate prior for a Bernoulli
 - Setup:
-  - $X_1,\dots,X_N ~ Bern(\theta)$
-  - $\theta ~ Beta(\theta|a,b)$
+  - $X_1,\dots,X_N \sim Bern(\theta)$
+  - $\theta \sim Beta(\theta|a,b)$
   - $P(X=1|\theta) = \theta$
   - $p(\theta) = \theta^{a-1}(1-\theta)^{b-1}/B(a,b) \propto \theta^{a-1}(1-\theta)^{b-1}$
   - $D = (x_1,\dots,x_n)$
@@ -574,7 +574,7 @@ output:
   - thus $p(\theta|D)$ is also a beta distribution
   - we are operating under the support $[0,1]$
     - some examples of how the $a$ and $b$ affect the shape of the prior
-- If $X~Beta(a,b)$, then $\mathbb{E} X = a/(a+b)$, $\sigma^2(X) = ab/((a+b)^2(a+b+1))$, mode (maximum density) is $(a-1)/(a+b-2)$
+- If $X\sim Beta(a,b)$, then $\mathbb{E} X = a/(a+b)$, $\sigma^2(X) = ab/((a+b)^2(a+b+1))$, mode (maximum density) is $(a-1)/(a+b-2)$
   - thus if $a:= a+n_1$, $b:= b+n_0$ i.e. the posterior calculated above, then we instantly get the summary statistics
     - $\mathbb{E}X = (a+n_1)/(a+b+n)$ as $n_0 + n_1 = n$
     - mode is $(a+n_1-1)/(a+b+n-2)$
@@ -592,10 +592,11 @@ output:
     - plugging in, $\int_\theta \theta Beta(\theta|a+n_1,b + n_0) = \mathbb{E}\theta = \frac{a+n_1}{a+b+n}$
     - so we get the predictive distribution in closed form
 
-# 7.7.A1 Dirichlet distribution
+
+# 7.7.A1: Dirichlet distribution
 
 - Distribution on probability distributions
-- for $\theta = (\theta_1,\dots,\theta_m) = \theta ~ Dir(\alpha)$ if $p(\theta) = \frac{1}{B(\alpha)}\prod_{i=1}^m \theta_i^{\alpha_i -1} I(\theta\in S)$
+- for $\theta = (\theta_1,\dots,\theta_m) = \theta \sim Dir(\alpha)$ if $p(\theta) = \frac{1}{B(\alpha)}\prod_{i=1}^m \theta_i^{\alpha_i -1} I(\theta\in S)$
   - $\alpha = (\alpha_1,\dots,\alpha_m)$, $\alpha_i > 0$
   - $S$ is the probability simplex given by $\{x\in \mathbb{R}^m|x_i\geq 0, \sum_i x_i = 1\}$
   - $B(\alpha)$ is the multivariate beta function $\frac{\prod_i\Gamma(\alpha_i)}{\Gamma(\alpha_0)}$, and normalizes the distribution
@@ -608,6 +609,80 @@ output:
   - the mode of $\theta = \big(\frac{\alpha_i-1}{a_0 -n}\big)$
   - $\sigma^2(\theta_i) = \frac{\alpha_i(\alpha_0-\alpha_i)}{\alpha_0^2(\alpha_0+1)}$
 - If all the $\alpha_i=1$, then $p(\theta)$ is the uniform distribution on the simplex
-- If all $alpha_j=1$ for $j\neq i$, then 
+- If all $\alpha_j=1$ for $j\neq i$, then 
   - as we raise $\alpha_i$, $\mathbb{E}\theta_i$ goes to $1$, all others go to $0$: get some kind of hump at the $i$ corner
   - as we lower $\alpha_i$ to $0$, then the density $Dir$ goes to infinity as $\theta_i$ goes to 0.
+
+# 7.7A2: Expectation of a Dirichlet random variable
+
+- as before, $p(\theta) = \frac{\Gamma(\alpha_0)}{\prod \Gamma(\alpha_i)}\prod_i \theta_i^{\alpha_i-1}I(\theta\in S)$
+- Property of the $\Gamma$ function: $\Gamma(x+1) = x\Gamma(x)$
+- $\mathbb{E}\theta_i = \int_\theta \theta_i p(\theta) d\theta = \int \theta_i\frac{\Gamma(\alpha_0)}{\prod \Gamma(\alpha_i)}\prod \theta_i^{\alpha_i-1} d\theta$
+  - Looking at $\theta_1$, this becomes $\int \theta_1^{\alpha-1}\frac{\Gamma(\alpha_0)}{\prod \Gamma(\alpha_i)}\prod_{i>1} \theta_i^{\alpha_i-1} d\theta$
+    - Define $\beta = (\alpha_1+1, \alpha_2,\alpha_3,\dots,\alpha_n)$
+      - thus $\beta_0 = \sum \beta_i = 1 + \alpha_0$
+      - so that $\Gamma(\alpha_0) = \Gamma(\beta_0)/\alpha_0$
+    - Note $\Gamma(\alpha_1+1) = \alpha_1\Gamma(\alpha_1)$
+    - plugging in, we get $\int \frac{\alpha_1}{\alpha_0}\frac{\Gamma(\beta_0)}{\prod \Gamma(\beta_i)}\prod_i \theta^{\beta_i-1} = \frac{\alpha_1}{\alpha_0}$
+      - integral of a pdf is 1
+  - similar arguments for the other $i$
+  - thus, $\mathbb{E}\theta_i = \frac{\alpha_i}{\alpha_0}$
+
+# 7.8-7.9: Dirichlet-Categorical model
+
+- Setup
+  - $\theta = (\theta_1,\dots,\theta_m)$, $\theta_i \geq 0$, $\sum \theta_i = 1$, $X_i\in \{1,\dots,m\}$
+  - $X_1,\dots,X_n \sim Cat(\theta)$
+    - $Cat(\theta)$ is defined by $P(X_i = j|\theta) = \theta_j$
+  - $\theta \sim Dir(\alpha)$, i.e. $p(\theta) \propto \prod_j \theta_j^{\alpha_j-1} I(\theta \in S)$
+  - $D = (x_1,\dots,x_n)$
+- Then
+  - $p(D|\theta) = \prod_1^n \theta_{x_i} = \prod_{i=1}^n\prod_{j=1}^m \theta^{I(x_i =j)} = \prod_{j=1}^m \theta_j^{c_j}$
+    - $c_j$ is the number of times $j$s in $D$, $c = (c_1,\dots,c_m)$
+  - $p(\theta|D) = p(D|\theta)p(\theta) = \prod_{j=1}^m \theta_j^{c_j + \alpha_j - 1} I(\theta\in S)\propto Dir(\alpha + c)$
+  - thus the Dirichlet is the conjugate prior for Categorical, and we get the posterior in closed form
+    - Briefly, $(\prod_i Cat(x_i|\theta))Dir(\theta|\alpha) = Dir(\theta|c+\alpha)$
+  - $p(x|D) = \int p(x|\theta)p(\theta|D) d\theta = \int \theta_x Dir(\alpha + c)d\theta$
+    - this is $\mathbb{E} \theta_x$ if $\theta$ is distributed by the posterior $Dir(\alpha + c)$
+      - $p(x|D) = \frac{c_x + \alpha_x}{n+a_0}$
+        - If we consider the $\alpha_i$ as "pseudo counts" (kind of like occurrences of $i$), then this is the empirical distribution if we added the new counts ($(c_i)$ with $\sum c_i = n$) to our pseudo counts
+
+# 7.9-7.10: Posterior distribution for univariate Gaussian
+
+- we are looking at the posterior distribution for the mean of a univariate Gaussian, i.e. $p(\theta|D)$
+- Setup
+  - $D = (x_1,\dots,x_n)$, $x_i\in\mathbb{R}$, $X_1,\dots X_n \sim N(\mu,\sigma^2)$ iid given $\mu$
+  - $\mu \sim N(\mu_0, \sigma_0^2)$
+  - Assume $\sigma^2$, $\mu_0$, $\sigma_0^2$ are known
+  - We are looking for $\theta := \mu$
+- $p(\theta|D) = p(\mu|D) \propto p(D|\mu)p(\mu) = p(\mu)\prod_i N(\mu,\sigma^2)\propto \exp \big(-\frac{1}{2\sigma_0^2}(\mu-\mu_0)^2 + \frac{-1}{2\sigma^2}\sum(x_i-\mu)^2\big)$
+  - the exponent is quadratic in $\mu$, so the pdf is a gaussian
+    - if we put it in form $-\frac{1}{2\sigma_n^2}(\mu-m)^2 + c$, we get
+      - the new variance $\sigma_n^2 = \frac{\sigma_0^2\sigma^2}{\sigma^2 + n\sigma_0^2}$
+        - is related to the harmonic mean of $(\sigma_0^2,\sigma^2,\dots\sigma^2)$: $\sigma_0^2$ once and $\sigma^2$ $n$ times
+      - the new mean $m =  \sigma_n^2\big( \frac{\mu_0}{\sigma_0^2} + \frac{\sum x_i}{\sigma^2}\big)$
+        - is a convex combination of the prior and the MLE (prior is $\mu_0$, MLE is $\bar{x} = \sum x_i/n$)
+        - $m = \frac{\sigma_n^2}{\sigma_0^2}\mu_0 + \frac{\sigma_n^2}{\sigma^2}n\mu_{MLE}$
+  - posterior distribution $p(\mu|D)\sim N(m,\sigma_n^2)$
+    - $m$ is the MAP
+    - as $n$ increases, the MAP goes to the MLE, $\sigma^2_n$ goes to 0
+      - we get a point mass at the MLE
+
+# 8.1: Naïve Bayes Classification
+
+- Naïve Bayes Model 
+  - a simple family of classifiation models
+  - not necessarily "Bayesian"
+  - performance not great, but it's a good baseline/intro to generative models
+- Setup
+  - Given $D = ((x^1,y^1),\dots (x^n,y^n))$
+  - $x^i = (x^i_1,\dots,x^i_d) \in \mathbb{R}^d$
+  - $y_i\in \mathcal{Y}$, where $\mathcal{Y}$ is a finite set, e.g. $\{1,\dots,m\}$
+- Assume a family of distributions $p_\theta$ such that for $x\in \mathbb{R}^d$ and $y\in\mathcal{Y}$, $p_\theta(x,y) = p_\theta(x|y)p_\theta(y) = p_\theta(x_1|y)\dots p_\theta(x_d|y)p_\theta(y)$
+  - in other words, we assume that coordinates $x_i$ of $x$ are conditionally independent given $y$
+  - we assume that our data came from $p_\theta$ for some $\theta$
+- Classification: Given $x\in\mathbb{R}^d$, we predict $y$
+  - Estimate $\theta$ from $D$
+  - Compute $\hat{y} = \arg\max_{y\in\mathcal{Y}} p_\theta(y|x) = \arg\max_y p_\theta (x|y)p_\theta(y)/p_\theta(x)$
+    - denominator is irrelevant when varying $y$
+    - $p_\theta(x|y) = \prod p_\theta(x_i|y)$ from our assumption/model
