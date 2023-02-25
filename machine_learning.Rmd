@@ -686,3 +686,70 @@ output:
   - Compute $\hat{y} = \arg\max_{y\in\mathcal{Y}} p_\theta(y|x) = \arg\max_y p_\theta (x|y)p_\theta(y)/p_\theta(x)$
     - denominator is irrelevant when varying $y$
     - $p_\theta(x|y) = \prod p_\theta(x_i|y)$ from our assumption/model
+
+# 8.2: More about Naïve Bayes
+
+- How do we choose $p_\theta$: depending on the problem, can do
+  - $p_\theta(y) = \pi_y$ where $\pi = (\pi_1,\dots,\pi_m)$
+    - i.e. some arbitrary distribution with $\pi$ as part of the parameters $\theta$
+  - $p_\theta(x_i|y)$
+    - if $X_i\in \{1,\dots,N\}$, i.e. a finite set, then $p_\theta(x_i|y) = q(x_i,y)$, i.e. a set of $nm$ numbers (one for each $y$ class and $x$ dimension)
+    - if $X_i\in \{1,2,\dots\}$, can choose a Poisson, Geometric etc.
+    - if $X_i\in \mathbb{R}$, can choose Gaussian, Gamma, etc
+- How to estimate $\theta$
+  - MLE - MAP (assuming a prior on $\theta$)
+  - Fully Bayesian Naïve Bayes: integrate over $\theta$ and get the predictive distribution $p(y|x)$
+- Why do we assume conditional independence?
+  - of course, we lose out on dependencies etc
+  - the benefit is that we can estimate $\theta$ more accurately with less data
+    - i.e. overfit less because data is denser if we restrict to each dimension than if we consider the points as elements of $\mathbb{R}^d$
+  - a wrong but simple model can perform better than a correct but complicated model in practice.
+
+# 8.3-8.6: Bayesian Naïve Bayes
+
+- Bayesian approach to Naïve Bayes model
+- "Fully Bayesian approach" to estimate $p(y|x,D)$
+- we'll consider the Categorical
+- Setup
+  - $D = ((x^1,y^1),\dots,(x^n,y^n))$
+  - $x^i = (x^i_1,\dots,x^i_d)$ with $x^i_j\in A_j$
+  - $A_j$ are finite sets
+  - $y^i \in \mathcal{Y} = \{1,\dots,m\}$
+  - $(X^i,Y^i)$ are iid from a probability distribution $p(x,y|\theta)$
+- Naïve Bayes assumption: $p(x,y|\theta) = p(y|\theta)\prod_{j=1}^d p(x_j,y)$
+  - features are conditionally independent given the class $y$ and $\theta$
+- Let's define the distributions
+  - $p(y|\theta) = \pi(y)$ with $\pi = (\pi(1),\dots,\pi(m))$ i.e. a parameterized vector, $\sum \pi(y) = 1$
+  - $p(x_j|y,\theta) = r_{jy}(x_j)$, i.e. $r_{jy}$ as a vector with $dm$ components, $\sum_{k\in A_j} r_{jy}(k) = 1$ for all $j,y$
+  - $\theta = (\pi,\{r_{jy}\})$
+  - can be seen as choose $y$ according to $\pi$, and then for each $j$ choose $x_j$ according to $r_{jy}$
+- Let's assume that $A_i = A_j$ for all $i$, $j$.
+- which prior for $\pi$ and $r_{jk}$
+  - For $y$, We pick the Dirichlet, as it's conjugate for the categorical: 
+    - $p(\pi) = Dir(\pi|\alpha) \propto \prod_{y=1}^m \pi(y)^{\alpha_y -1}I(\pi \in S)$
+    - $\alpha_y > 0$ for all $y$
+    - product over possible $y$
+  - For $r_{jk}$, we also do Dirichlet
+    - $p(r_{jk}) = Dir(r_{jk}|\beta)\propto \prod_{l\in A} r_{jk}(l)^{\beta_l -1}I(r_{jk} \in S)$
+    - $\beta_i > 0$
+    - product over possible $x_j\in A$
+- To get a prior for the joint distribution of $\theta$, We assume that the priors are independent: $p(\theta) = p(\pi)\prod_{j,k}p(r_{jk})$
+- Let's classify a new point given $x$:
+  - i.e. the predictive distribution $p(y|x,D)$
+  - $p(y|x,D) \propto_y p(y,x,D) = \int_\theta p(x,y,D|\theta)p(\theta) d\theta = \int_\theta p(x,y|\theta)p(\theta)\prod_{i=1}^np(x^i,y^i|\theta)d\theta$
+    - using conditional independence $p(x,y,D|\theta) = p(x,y|\theta)p(D|\theta)$
+  - $p(x,y|\theta) = \pi(y)\prod_{j,k} r_{jk}(x_j^{I(y=k)})$ by definition and bayes assumption
+  - $\prod_{i=1}^n p(x^i,y^i|\theta) = \prod_i Cat(y^i|\pi)\prod_{jk}Cat(x^i_j|r_{jk})^{I(y_i=k)}$
+  - $p(\theta) = Dir(\pi|\alpha)\prod_{j,k}Dir(r_{jk}|\beta)$
+  - Thus, $p(y|x,D) \propto \int_\theta p(x,y|\theta) Dir(\pi|\alpha + c)\prod_{jk}Dir(r_{jk}|\beta + d_{jk}) d\theta$
+    - $c = (c_1,\dots,c_m)$, where $c_k$ is the number of points in $D$ with $y = k$
+    - $d_{jk}(l)$ is the number of points in $D$  where $x^i_j = l$ and $y^i = k$
+    - $p(x,y|\theta) = \pi(y)\prod_{j,k}r_{jk}(x_j)^{I(y=k)}$
+  - grouping stuff, we have
+    - $p(y|x,D) = \big( \int \pi(y)Dir(\pi|\alpha + c)d\pi\big)\prod_{j,k}\int_{r_{jk}} r_{jk}(x_j)^{I(y=k)}Dir(r_{jk}|\beta + d_{jk})dr_{jk}$
+      - $\int \pi(y)Dir(\pi|\alpha + c)d\pi$ is the expected value of the dirichlet, so is $\frac{\alpha_y + c_y}{\sum_y(\alpha_y + c_y)}$
+      - $\int_{r_{jk}} r_{jk}(x_j)^{I(y=k)}Dir(r_{jk}|\beta + d_{jk})dr_{jk}$ is $1$ if $y\neq k$; if $y=k$, then it's the expected value of the $x_j$ coordinate, \frac{\beta_{x_j} + d_{jy}(x_j)}{\sum (\beta_l + d_{jy}(l))} 
+      - note that $\sum c_y = n$, $\sum_l d_{jy}(l) = c_y$
+  - $p(y|x,D)\propto \frac{\alpha_y + c_y}{\alpha_0+n}\prod_{j=1}^d \frac{\beta_{x_j} + d_{jy}(x_j)}{\beta_0 + c_y}$
+    - $\alpha_0 = \sum_y \alpha_y$, $\beta_0 = \sum_l \beta_l$
+- it's nice that we were able to calculate the integrals exactly using conjugate priors and facts about probability distributions and expectations
