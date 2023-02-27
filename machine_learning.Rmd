@@ -738,18 +738,80 @@ output:
   - i.e. the predictive distribution $p(y|x,D)$
   - $p(y|x,D) \propto_y p(y,x,D) = \int_\theta p(x,y,D|\theta)p(\theta) d\theta = \int_\theta p(x,y|\theta)p(\theta)\prod_{i=1}^np(x^i,y^i|\theta)d\theta$
     - using conditional independence $p(x,y,D|\theta) = p(x,y|\theta)p(D|\theta)$
-  - $p(x,y|\theta) = \pi(y)\prod_{j,k} r_{jk}(x_j^{I(y=k)})$ by definition and bayes assumption
-  - $\prod_{i=1}^n p(x^i,y^i|\theta) = \prod_i Cat(y^i|\pi)\prod_{jk}Cat(x^i_j|r_{jk})^{I(y_i=k)}$
-  - $p(\theta) = Dir(\pi|\alpha)\prod_{j,k}Dir(r_{jk}|\beta)$
+  - $p(x,y|\theta) = \pi(y)\prod_{j,k} r_{jk}(x_j)^{I(y=k)}$ by definition and bayes assumption
+  - By independence and definition, $\prod_{i=1}^n p(x^i,y^i|\theta) = \prod_i Cat(y^i|\pi)\prod_{jk}Cat(x^i_j|r_{jk})^{I(y_i=k)}$
+  - Assuming that $\pi$ and $r$ are independent, $p(\theta) = Dir(\pi|\alpha)\prod_{j,k}Dir(r_{jk}|\beta)$
   - Thus, $p(y|x,D) \propto \int_\theta p(x,y|\theta) Dir(\pi|\alpha + c)\prod_{jk}Dir(r_{jk}|\beta + d_{jk}) d\theta$
     - $c = (c_1,\dots,c_m)$, where $c_k$ is the number of points in $D$ with $y = k$
     - $d_{jk}(l)$ is the number of points in $D$  where $x^i_j = l$ and $y^i = k$
-    - $p(x,y|\theta) = \pi(y)\prod_{j,k}r_{jk}(x_j)^{I(y=k)}$
-  - grouping stuff, we have
+    - from before, $p(x,y|\theta) = \pi(y)\prod_{j,k}r_{jk}(x_j)^{I(y=k)}$
+  - grouping stuff (as $\theta$ has a bunch of components), we have
     - $p(y|x,D) = \big( \int \pi(y)Dir(\pi|\alpha + c)d\pi\big)\prod_{j,k}\int_{r_{jk}} r_{jk}(x_j)^{I(y=k)}Dir(r_{jk}|\beta + d_{jk})dr_{jk}$
       - $\int \pi(y)Dir(\pi|\alpha + c)d\pi$ is the expected value of the dirichlet, so is $\frac{\alpha_y + c_y}{\sum_y(\alpha_y + c_y)}$
       - $\int_{r_{jk}} r_{jk}(x_j)^{I(y=k)}Dir(r_{jk}|\beta + d_{jk})dr_{jk}$ is $1$ if $y\neq k$; if $y=k$, then it's the expected value of the $x_j$ coordinate, \frac{\beta_{x_j} + d_{jy}(x_j)}{\sum (\beta_l + d_{jy}(l))} 
       - note that $\sum c_y = n$, $\sum_l d_{jy}(l) = c_y$
   - $p(y|x,D)\propto \frac{\alpha_y + c_y}{\alpha_0+n}\prod_{j=1}^d \frac{\beta_{x_j} + d_{jy}(x_j)}{\beta_0 + c_y}$
     - $\alpha_0 = \sum_y \alpha_y$, $\beta_0 = \sum_l \beta_l$
+    - in other words, the product of the Dirchlet-Categorical models for each $y$ and pairs $(x_j,y)$ considered independently
+      - the independence assumption kinda filters through to the result here.
 - it's nice that we were able to calculate the integrals exactly using conjugate priors and facts about probability distributions and expectations
+
+# 9.1: Linear regression - Nonlinearity via basis functions
+
+- Not just about lines and planes: can fit curves, periodic functions, etc. too
+- Setup
+  - $D = ((x_1,y_1),\dots,(x_n,y_n))$
+  - $x_i\in \mathbb{R}^d$
+  - $y_i\in \mathbb{R}$
+- Goal: get a function $f: \mathbb{R}^d\rightarrow \mathbb{R}$ to predict $y$ for a new $x$
+- Basis Functions:
+  - represent nonlinear problems in a linear way
+  - Suppose $x\in \mathbb{R}^d$, $y\in \mathbb{R}$
+    - simplest solution is a linear combination: $f(x) = w^Tx = \sum_{i=1}^d w_ix(i)$, where $x(i)$ is the $i$-th component of $x$.
+    - another solution: $f(x) = w^T\phi(x) = \sum_{i=1}^n w_i\phi(x)$, where $\phi:\mathbb{R}\rightarrow \mathbb{R}^m$
+      - this can give us nonlinear solutions that are linear in $w$
+      - for example, if $d=1$, we can do $f(x) = (1,x,x^2)\in\mathbb{R}^3$, giving us a quadratic model.
+      - $\phi$ as identity is the case from before
+      - If we define $\phi(x) = (\phi_1(x),\dots,\phi_m(x))$, the $\phi_i$ are the basis functions.
+- Other examples
+  - polynomials: (even with interaction terms if desired)
+  - radial basis functions: each $\phi_i$ is a little gaussian on $x$
+  - fourier basis functions: each basis function is a sin curve, can make periodic functions
+  - wavelets: essentially attenuated sin curves, (perhaps convolution of radial basis with fourier basis)
+
+# 9.2: Linear regression - Definition & Motivation
+
+- $\phi$ takes $x$ from the original space to the "feature space"
+- From now on, let's work with the feature space, where things are linear.
+- Motivation via Discriminative approach: want to model $p(y|x)$
+  - Assume a family of distributions $p_\theta(y|x)$ parameterized by $\theta \in \Theta$
+  - We want to estimate $\theta$ given data $D$, e.g. via MLE
+  - easiest family of distributions for $y\in \mathbb{R}$ are Gaussians
+    - $p_\theta(y|x) = N(y|\mu(x),\sigma^2(x))$
+      - $x\in \mathbb{R}^d$
+      - $\theta = (\mu,\sigma^2)$, $\mu: \mathbb{R}^d\rightarrow\mathbb{R}$, $\sigma^2: \mathbb{R}^d\rightarrow\mathbb{R}>0$
+      - in other words, $y$ is normally distributed with $\mu$ and $\sigma$ as functions of $x$
+- Gaussian Linear Regression 
+  - models the data $D$ by assuming $p_\theta(y|x) = N(y|w^Tx,\sigma^2)$
+    - parameterized $\theta = (w,\sigma^2)$, where $w\in\mathbb{R}^d$, $\sigma^2 > 0$
+    - i.e. we assume that the $\mu$ function above is $\mu(x) = w^Tx$ and $\sigma^2$ is a constant.
+  - Alternative formulation: $y = w^Tx + \epsilon$, where $\epsilon \sim N(0,\sigma^2)$
+    - $\epsilon$ is gaussian noise
+
+# 9.3 Choosing $f$ under linear regression
+
+- Before, we model $y$ as coming from a normal distribution with mean $w^Tx$ and standard deviation $\sigma^2$
+  - for each $x$, this gives us a distribution for $y$
+  - but we want to predict a value $f(x)$, not a distribution
+- Let's try to minimize expected loss
+  - let's minimize square loss $\mathcal{L}(y,\hat{y}) = (y-\hat{y})^2$
+  - For square loss, $\arg\min_y\mathbb{E}_\theta (\mathcal{L}(Y,y)|X=x) = \mathbb{E}_\theta(Y|X=x) = \mathbb{E}_\theta (w^Tx + \epsilon|X=x) = w^Tx$
+  - thus we define $f(x) = w^Tx$ to minimize square loss.
+- Choices:
+  - Discriminative approach
+  - Gaussian distribution $p_\theta(y|x) = N(y|\mu(x),\sigma^2(x))$
+  - Linear model for $\mu(x) = w^Tx$
+  - if we know $\theta = (w,\sigma^2)$, choose $f$ to minimize expected square loss: i.e. $f(x) = w^Tx$
+- missing step: How do we find the true $\theta$, or more relevant, $w$?
+  - Estimate using MLE
+  - can also do ridge regression, lasso regression, etc to find a different $\theta$
