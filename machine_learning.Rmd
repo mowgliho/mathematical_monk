@@ -6,13 +6,15 @@ output:
     toc_depth: 2
 ---
 
-# 1.1: Machine learning: overview and applications
+# 1: Overview, example
+
+## 1.1: Machine learning: overview and applications
 
 - Machine learning is defined here as algorithms for inferring unknowns from knowns
   - subfield of statistics focusing on algorithms
 - Many different applications
 
-# 1.2: What is supervised learning?
+## 1.2: What is supervised learning?
 
 - Supervised learning: Given $(x^1,y^1),\dots,(x^n,y^n)$, where $x^i$ are data points, $y^i$ are class/value, we want to choose a function $f(x) = y$
   - and be able to generalize to new $x$ points.
@@ -20,7 +22,7 @@ output:
   - Regression $y^i \in \mathbb{R}^d$
     - note that the word "regression" is historical
 
-# 1.3: What is unsupervised learning
+## 1.3: What is unsupervised learning
 
 - Unsupervised learning is well defined
   - Given $(x^1,\dots,x^n)$, typically $x^i\in \mathbb{R}^k$, find "patterns" in the data
@@ -28,7 +30,7 @@ output:
     - Density estimation: find a function for the density of the data
     - Dimensionality reduction: find a lower dimensional space to represent data
 
-# 1.4: Variations on supervised and unsupervised
+## 1.4: Variations on supervised and unsupervised
 
 - Semi-supervised Learning: get labeled data $(x^1,y^1),\dots,(x^k,y^k)$, unlabeled $x^{k+1},\dots,x^n$
   - the task is to predict the labels $y^{k+1},\dots,y^n$
@@ -40,14 +42,14 @@ output:
   - e.g. weight false positives more than false negatives (e.g. a doctor deciding to do a test)
 - Reinforcement Learning: Make actions to maximize long term rewards and minimize overall losses, improve model as go along.
 
-# 1.5: Generative vs discriminative models
+## 1.5: Generative vs discriminative models
 
 - Discrimative: Model $\mathbb{P}(y|x)$, i.e. the class of a given point $x$
 - Generative: Model the joint distribution $\mathbb{P}(x,y)$
 - can use generative to discriminate by comparing probabilities
 - creating generative models takes a lot of data, have to estimate things, etc, so often discriminative models are better - and more appropriate to the problem at hand.
 
-# 1.6: $k$-Nearest Neighbor classification algorithm
+## 1.6: $k$-Nearest Neighbor classification algorithm
 
 - Given data $(x_i, y_i)$, $x_i\in \mathbb{R}^d$, $y_i\in \{0,1\}$, classify a new $x$
 - $kNN$: by a majority vote of the $k$ nearest points.
@@ -57,7 +59,9 @@ output:
   - this is a discriminative model
 - $k$ is a parameter, so we can select via cross-validation, bias variance tradeoff, etc.
 
-# 2.1: Classification trees (CART)
+# 2: Trees
+
+## 2.1: Classification trees (CART)
 
 - Decision trees are very simple, but can have pretty good performance (especially paired with randomization)
 - Classification trees
@@ -66,7 +70,7 @@ output:
       - a question/decision 
       - a leaf: classify by majority vote at the leaf
 
-# 2.2: Regression trees (CART)
+## 2.2: Regression trees (CART)
 
 - Regression tree
   - again, make a binary tree and minimize error in each leaf
@@ -76,7 +80,7 @@ output:
     - e.g. error as square error over all $y$'s
     - get a piecewise constant function
 
-# 2.3: Growing a regression tree (CART)
+## 2.3: Growing a regression tree (CART)
 
 - note that the $x$ can be real valued, discrete, or even unordered
 - Growing a tree
@@ -93,7 +97,7 @@ output:
       - or something else
 - we can prune afterwards or do something like random forest afterwards
 
-# 2.4: Growing a classification tree (CART)
+## 2.4: Growing a classification tree (CART)
 
 - suppose that the points are in $\mathbb{R}^d$, classified into classes
 - given a subregion $R$, we classify by a majority/plurality vote
@@ -110,7 +114,7 @@ output:
   - or something else
 - could also try to minimize entropy/gini index instead
 
-# 2.5: Generalizations for trees (CART)
+## 2.5: Generalizations for trees (CART)
 
 - impurity measures for classification:
   - $E_R$: the proportion of stuff that would be misclassified (which we used before)
@@ -131,7 +135,7 @@ output:
       - especially with the upcoming aggregation techniques
   - instability: estimator can have high variance, so has low performance in general
 
-# 2.6: Bootstrap Aggregation (Bagging)
+## 2.6: Bootstrap Aggregation (Bagging)
 
 - take a simple algorithm and make it better (not always, but quite often)
 - reduces the variation of a classification or regression procedure
@@ -154,7 +158,7 @@ output:
   - but we can simulate this by sampling from our dataset
   - e.g. draw uniformly from the original dataset $D$, iid, with replacement
 
-# 2.7: Bagging for classification
+## 2.7: Bagging for classification
 
 - natural extensions of previous one
   - majority vote of models (each dataset gives us a classifier $C_i$)
@@ -171,7 +175,7 @@ output:
     - as before, we can approximate $\mathbb{E}(Y)$ with $z$, i.e. the data that we have - and reduce randomness again
   - i.e. more rationalization of the bagging algorithm
 
-# 2.8: Random forests
+## 2.8: Random forests
 
 - Combination of CART trees and bagging - and "random subspace"
 - Simple idea, but somehow state of the art performance
@@ -185,7 +189,9 @@ output:
 - works for the same reason that bootstrapping works
   - each tree has high variance, but boostrapping reduces the variance
 
-# 3.1: Decision Theory (Basic Framework)
+# 3: The Big Picture
+
+## 3.1: Decision Theory (Basic Framework)
 
 - Decision Theory: minimize expected loss
 - Loss Matrix:
@@ -200,7 +206,7 @@ output:
   - get a loss $L(s,a)$
 - note that we can do the opposite and do "reward/utility" instead
 
-# 3.2: Minimizing conditional expected loss
+## 3.2: Minimizing conditional expected loss
 
 - Decision theory for supervised learning
   - Setup
@@ -221,7 +227,7 @@ output:
       - so we should pick $\hat{y}$ to maximize $p(\hat{y}|x)$
       - i.e. minimizing the expected 0-1 loss tells us to predict the most likely $y$
 
-# 3.3: Choosing $f$ to minimize expected loss
+## 3.3: Choosing $f$ to minimize expected loss
 
 - Now let's look at Possible Situation 2 from above
   - $\hat{y} = f(x)$
@@ -236,7 +242,7 @@ output:
     - the fact that we don't know $x$ yet doesn't really matter
     - more important is $p(y|x)$
 
-# 3.4: Square Loss
+## 3.4: Square Loss
 
 - Consider the square loss $L(y,\hat{y}) = (y-\hat{y})^2$, with $X,Y$ given by $p$
   - no longer discrete, suppose that $p$ is a smooth and has a derivative
@@ -249,7 +255,7 @@ output:
     - this is a nice property of the square loss
 - the solution to the minimum problem for the square loss is to set $f(x):=\mathbb{E}(Y|X=x)$, i.e. the expectation of $Y$ given $x$ at each $x$
 
-# 3.4: The Big Picture (part 1)
+## 3.4: The Big Picture (part 1)
 
 - Specifically focusing on supervised learning, but the concepts generalize
 - many of the core concepts of machine learning come from trying to minimizing $\mathbb{E}(L(Y,f(X)))$
@@ -267,7 +273,7 @@ output:
   - the integral sucks too.
   - this problem often intractable
 
-# 3.5: The Big Picture (part 2)
+## 3.5: The Big Picture (part 2)
 
 - notation:
   - $p(y|x,D)$ is the "predictive distribution" on $y$
@@ -288,7 +294,7 @@ output:
     - Markov Chain Monte Carlo (Gibbs, Metropolis-Hastings), Importance Sampling
 - many methods combine these techniques
 
-# 3.6: The Big Picture (part 3)
+## 3.6: The Big Picture (part 3)
 
 - Extensions of methods above to unsupervised learning
 - Density Estimation (Unsupervised)
@@ -302,7 +308,9 @@ output:
     - $p(x|\theta)$ is nice: just the model
     - $p(\theta|D)$ and the integral are not nice.
 
-# 4.1: Maximum Likelihood Estimation (MLE) (part 1)
+# 4: MLE
+
+## 4.1: Maximum Likelihood Estimation (MLE) (part 1)
 
 - Setup:
   - Given data $D = (x_1,\dots,x_n)$, $x_i\in \mathbb{R}^d$
@@ -327,7 +335,7 @@ output:
   - Point estimate, so has no representation of uncertainty (i.e. we don't consider $p(\theta|D)$)
     - for example, perhaps the likelihood spikes to a high maximum, but has a larger/more probable distribution elsewhere
 
-# 4.2: Maximum Likelihood Estimation (MLE) (part 2)
+## 4.2: Maximum Likelihood Estimation (MLE) (part 2)
 
 - more cons of MLE
   - Overfitting
@@ -336,7 +344,7 @@ output:
   - Wrong objective? e.g. MLE disregards the loss function
   - Existence and Uniqueness is not guaranteed
 
-# 4.3: MLE for univariate Gaussian mean
+## 4.3: MLE for univariate Gaussian mean
 
 - Remember: $\theta_{MLE} = \arg\max_\theta p(D|\theta)$
 - We assume a univariate gaussian $X \sim N(\theta,\sigma^2)$
@@ -352,7 +360,7 @@ output:
   - thus $\theta$ is given by the average of the $x_i$'s, ie the sample mean
 - if you take the derivative wrt to $\sigma$, you obtain $\sigma^2 = \frac{\sum(x_i-\theta)^2}{n}$, i.e. the sample variance
 
-# 4.4: MLE for a PMF on a finite set (part 1)
+## 4.4: MLE for a PMF on a finite set (part 1)
 
 - $X \sim p$, $X\in \{1,\dots,m\}$
   - for example, look at a die: $m = 6$
@@ -365,7 +373,7 @@ output:
 - to maximize $p(D|\theta)$, we can take the log, so we want to maximize $\sum_{j=1}^m n_j\log \theta_j$
 - we can also max if we divided by $n$, i.e. $\sum_{j=1}^m \frac{n_j}{n}\log \theta_j$
 
-# 4.5: MLE for a PMF on a finite set (part 2)
+## 4.5: MLE for a PMF on a finite set (part 2)
 
 - continuing from last time
 - set $q_j = n_j/n$
@@ -378,7 +386,9 @@ output:
 - $\theta_{MLE} = (\theta_1,\dots,\theta_n)$, where $\theta_j = n_j/n$, or the proportion of the data that is $j$
   - i.e. the empirical distribution
  
-# 5.1-5.2: Exponential Families
+# 5: Exponential Families
+
+## 5.1-5.2: Exponential Families
 
 - many common distributions are cases of exponential families
 - have some nice properties
@@ -414,7 +424,7 @@ output:
   - support depends on $\theta$ not $x$
   - note that if we consider $\theta$ to be a constant (i.e. not a parameter), this can trivially be put into exponential family form.
 
-# 5.3-5.4: MLE for an exponential family
+## 5.3-5.4: MLE for an exponential family
 
 - Assume that our family is in natural form, i.e.
   - $x\in\mathbb{R}^d$, $\theta \in \mathbb{R}^k$
@@ -454,7 +464,9 @@ output:
       - $1/\theta = (1/n)\sum_{i=1}^n x_i$
       - $\theta_{MLE} = \frac{1}{\frac{1}{n}\sum_{i=1}^n x_i}$
 
-# 6.1: Maximum a posteriori (MAP) estimation
+# 6: MAP
+
+## 6.1: Maximum a posteriori (MAP) estimation
 
 - Setup
   - data $D=(x_1,\dots,x_n)$, $x_i\in \mathbb{R}^d$
@@ -477,7 +489,7 @@ output:
     - if $\tau = g(\theta)$, then $\tau_{MLE} = g(\theta_{MLE})$: this doesn't hold for MAP
   - Must assume a prior distribution on $\theta$
 
-# 6.2: MAP for univariate Gaussian mean
+## 6.2: MAP for univariate Gaussian mean
 
 - Data $D = (x_1,\dots,x_n)$, $x_i\in\mathbb{R}$
 - Suppose $\theta$ is a random variable distributed normally with unit variance: $N(\mu,1)$
@@ -491,14 +503,16 @@ output:
 - verify that the second deriative is negative
 - so the new estimate is a convex combination of the sample mean $\bar{x}$ and the prior mean $\mu$
 
-# 6.3: Interpretation of MAP as convex combination
+## 6.3: Interpretation of MAP as convex combination
 
 - from before, the MAP is a convex combination of the sample mean $\bar{x}$ and the prior mean $\mu$ for the univariate Gaussian mean
   - as we get more data, we lean towards the sample mean $\bar{x}$ (the MLE estimate)
   - with less data, we default to the prior mean $\mu$
 - this happens often with the MAP: that it is a convex combination of the prior and the MLE
 
-# 7.1: Bayesian inference - A simple example
+# 7: Bayesian Inference
+
+## 7.1: Bayesian inference - A simple example
 
 - Bayesian inference: put distributions on all the things and then use rules of probability
 - Suppose Tom is going to XY University and joins the football team
@@ -520,7 +534,7 @@ output:
     - $P(x|D) = \int_\theta P(x,\theta|D) d\theta = \int_\theta p(x|\theta) p(\theta|D)$ due to conditional independence
       - this is also a gaussian, nicely
 
-# 7.2: Aspects of Bayesian inference
+## 7.2: Aspects of Bayesian inference
 
 - Bayesian Inference: Assume a prior distribution $p(\theta)$, use probability to infer the answers that we're looking for
 - Bayesian procedures: Minimize expected loss, averaging over $\theta$
@@ -542,14 +556,14 @@ output:
     - e.g. $\theta \in \mathbb{R}$ universally distributed, do $p(\theta) = 1$
   - Conjugate priors: very nice to work with
 
-# 7.3: Proportionality
+## 7.3: Proportionality
 
 - Notation $f\propto g$ if $g(x) = cf(x)$ for all $x$ for a $c\neq 0$
   - also implies $g\propto f$
 - If $f$ is a pdf and $f\propto g$, then $g$ uniquely determines $f$, and $f(x) = g(x)\int_x g(x) dx$
   - i.e. $g$ is "unnormalized", $f$ is normalized
 
-# 7.4: Conjugate priors
+## 7.4: Conjugate priors
 
 - allow us to get posterior distributions in closed form
 - Definition: A family $\mathcal{F}$ of prior distributions $p(\theta)$ is conjugate to a likelihood $p(D|\theta)$ if the resulting posterior $p(\theta|D)$ is in $\mathcal{F}$
@@ -558,7 +572,7 @@ output:
   - Gaussian is conjugate to Gaussian (if the $\theta$ we're considering is the mean of the distriubution)
   - Any exponential family has a conjugate prior: so if the data comes from an exponential family source, we have a conjugate prior that we can use to get analytic posterior.
 
-# 7.5: Beta-Bernoulli model (part 1)
+## 7.5: Beta-Bernoulli model (part 1)
 
 - Sequence of binary outcomes (e.g. coin flip) modeled with Bernoulli random variables with with beta prior distribution on the probability of heads
   - Beta is the conjugate prior for a Bernoulli
@@ -579,7 +593,7 @@ output:
     - $\mathbb{E}X = (a+n_1)/(a+b+n)$ as $n_0 + n_1 = n$
     - mode is $(a+n_1-1)/(a+b+n-2)$
 
-# 7.6: Beta-Bernoulli model (part 2)
+## 7.6: Beta-Bernoulli model (part 2)
 
 - With the same setup as before
   - $\theta_{MLE}$ is the empirical distribution, i.e. $\theta_{MLE} = n_1/n$
@@ -593,7 +607,7 @@ output:
     - so we get the predictive distribution in closed form
 
 
-# 7.7.A1: Dirichlet distribution
+## 7.7.A1: Dirichlet distribution
 
 - Distribution on probability distributions
 - for $\theta = (\theta_1,\dots,\theta_m) = \theta \sim Dir(\alpha)$ if $p(\theta) = \frac{1}{B(\alpha)}\prod_{i=1}^m \theta_i^{\alpha_i -1} I(\theta\in S)$
@@ -613,7 +627,7 @@ output:
   - as we raise $\alpha_i$, $\mathbb{E}\theta_i$ goes to $1$, all others go to $0$: get some kind of hump at the $i$ corner
   - as we lower $\alpha_i$ to $0$, then the density $Dir$ goes to infinity as $\theta_i$ goes to 0.
 
-# 7.7A2: Expectation of a Dirichlet random variable
+## 7.7A2: Expectation of a Dirichlet random variable
 
 - as before, $p(\theta) = \frac{\Gamma(\alpha_0)}{\prod \Gamma(\alpha_i)}\prod_i \theta_i^{\alpha_i-1}I(\theta\in S)$
 - Property of the $\Gamma$ function: $\Gamma(x+1) = x\Gamma(x)$
@@ -628,7 +642,7 @@ output:
   - similar arguments for the other $i$
   - thus, $\mathbb{E}\theta_i = \frac{\alpha_i}{\alpha_0}$
 
-# 7.8-7.9: Dirichlet-Categorical model
+## 7.8-7.9: Dirichlet-Categorical model
 
 - Setup
   - $\theta = (\theta_1,\dots,\theta_m)$, $\theta_i \geq 0$, $\sum \theta_i = 1$, $X_i\in \{1,\dots,m\}$
@@ -647,7 +661,7 @@ output:
       - $p(x|D) = \frac{c_x + \alpha_x}{n+a_0}$
         - If we consider the $\alpha_i$ as "pseudo counts" (kind of like occurrences of $i$), then this is the empirical distribution if we added the new counts ($(c_i)$ with $\sum c_i = n$) to our pseudo counts
 
-# 7.9-7.10: Posterior distribution for univariate Gaussian
+## 7.9-7.10: Posterior distribution for univariate Gaussian
 
 - we are looking at the posterior distribution for the mean of a univariate Gaussian, i.e. $p(\theta|D)$
 - Setup
@@ -668,7 +682,9 @@ output:
     - as $n$ increases, the MAP goes to the MLE, $\sigma^2_n$ goes to 0
       - we get a point mass at the MLE
 
-# 8.1: Naïve Bayes Classification
+# 8: Naïve Bayes
+
+## 8.1: Naïve Bayes Classification
 
 - Naïve Bayes Model 
   - a simple family of classifiation models
@@ -687,7 +703,7 @@ output:
     - denominator is irrelevant when varying $y$
     - $p_\theta(x|y) = \prod p_\theta(x_i|y)$ from our assumption/model
 
-# 8.2: More about Naïve Bayes
+## 8.2: More about Naïve Bayes
 
 - How do we choose $p_\theta$: depending on the problem, can do
   - $p_\theta(y) = \pi_y$ where $\pi = (\pi_1,\dots,\pi_m)$
@@ -705,7 +721,7 @@ output:
     - i.e. overfit less because data is denser if we restrict to each dimension than if we consider the points as elements of $\mathbb{R}^d$
   - a wrong but simple model can perform better than a correct but complicated model in practice.
 
-# 8.3-8.6: Bayesian Naïve Bayes
+## 8.3-8.6: Bayesian Naïve Bayes
 
 - Bayesian approach to Naïve Bayes model
 - "Fully Bayesian approach" to estimate $p(y|x,D)$
@@ -756,7 +772,9 @@ output:
       - the independence assumption kinda filters through to the result here.
 - it's nice that we were able to calculate the integrals exactly using conjugate priors and facts about probability distributions and expectations
 
-# 9.1: Linear regression - Nonlinearity via basis functions
+# 9: Linear Regression
+
+## 9.1: Linear regression - Nonlinearity via basis functions
 
 - Not just about lines and planes: can fit curves, periodic functions, etc. too
 - Setup
@@ -768,7 +786,7 @@ output:
   - represent nonlinear problems in a linear way
   - Suppose $x\in \mathbb{R}^d$, $y\in \mathbb{R}$
     - simplest solution is a linear combination: $f(x) = w^Tx = \sum_{i=1}^d w_ix(i)$, where $x(i)$ is the $i$-th component of $x$.
-    - another solution: $f(x) = w^T\phi(x) = \sum_{i=1}^n w_i\phi(x)$, where $\phi:\mathbb{R}\rightarrow \mathbb{R}^m$
+    - another solution: $f(x) = w^T\phi(x) = \sum_{i=1}^n w_i\phi(x)$, where $\phi:\mathbb{R}^d\rightarrow \mathbb{R}^m$
       - this can give us nonlinear solutions that are linear in $w$
       - for example, if $d=1$, we can do $f(x) = (1,x,x^2)\in\mathbb{R}^3$, giving us a quadratic model.
       - $\phi$ as identity is the case from before
@@ -779,7 +797,7 @@ output:
   - fourier basis functions: each basis function is a sin curve, can make periodic functions
   - wavelets: essentially attenuated sin curves, (perhaps convolution of radial basis with fourier basis)
 
-# 9.2: Linear regression - Definition & Motivation
+## 9.2: Linear regression - Definition & Motivation
 
 - $\phi$ takes $x$ from the original space to the "feature space"
 - From now on, let's work with the feature space, where things are linear.
@@ -790,7 +808,7 @@ output:
     - $p_\theta(y|x) = N(y|\mu(x),\sigma^2(x))$
       - $x\in \mathbb{R}^d$
       - $\theta = (\mu,\sigma^2)$, $\mu: \mathbb{R}^d\rightarrow\mathbb{R}$, $\sigma^2: \mathbb{R}^d\rightarrow\mathbb{R}>0$
-      - in other words, $y$ is normally distributed with $\mu$ and $\sigma$ as functions of $x$
+      - in other words, $y$ is normally distributed with $\mu$ and $\sigma^2$ as functions of $x$
 - Gaussian Linear Regression 
   - models the data $D$ by assuming $p_\theta(y|x) = N(y|w^Tx,\sigma^2)$
     - parameterized $\theta = (w,\sigma^2)$, where $w\in\mathbb{R}^d$, $\sigma^2 > 0$
@@ -798,7 +816,7 @@ output:
   - Alternative formulation: $y = w^Tx + \epsilon$, where $\epsilon \sim N(0,\sigma^2)$
     - $\epsilon$ is gaussian noise
 
-# 9.3 Choosing $f$ under linear regression
+## 9.3 Choosing $f$ under linear regression
 
 - Before, we model $y$ as coming from a normal distribution with mean $w^Tx$ and standard deviation $\sigma^2$
   - for each $x$, this gives us a distribution for $y$
@@ -815,3 +833,44 @@ output:
 - missing step: How do we find the true $\theta$, or more relevant, $w$?
   - Estimate using MLE
   - can also do ridge regression, lasso regression, etc to find a different $\theta$
+
+## 9.4-9.6: MLE for linear regression
+
+- Setup:
+  - $D = ((x_1,y_1),\dots,(x_n,y_n))$
+  - $x_i \in \mathbb{R}^d$
+  - $y\in \mathbb{R}$
+- Assumptions
+  - Gaussian linear regression: $y\sim N(w^Tx,\sigma^2)$
+  - $\sigma^2$ is known: so we parameterize by $\theta = w$
+  - $y_i$ are iid
+- MLE
+  - $\theta_{MLE} = \arg\max_{\theta\in\Theta}p(D|\theta)$
+    - (more precisely, the MLE satisfies this - there can be more than one)
+  - $p(D|\theta) = \prod_i p(y_i|x_i,\theta) = \frac{1}{\sqrt{2\pi\sigma^2}^n} \exp\big(-\frac{1}{2\sigma^2}\sum_i (y_i-w^Tx_i)^2\big)$
+    - we are ignoring the distribution of the $x$
+    - note that $\sum_i (y_i-w^Tx_i)^2 = (y-Aw)^T(y-Aw) = ||y-Aw||^2$, where
+      - $y = (y_1,\dots,y_n)$
+      - $A$ is a $n\times d$ matrix where each row is an $x_i$
+    - to maximize $p(D|\theta)$, we want to minimize $\mathcal{L}:=(y-Aw)^T(y-Aw) = y^Ty-2y^TAw + w^TA^TAw$
+      - take the gradient $\nabla_w\mathcal{L} = -2A^Ty + 2A^TAw$
+        - we can check this by writing it out and seeing the derivative in each dim
+          - for the $w^TA^TAw$ part, look at $w^TBw$, where $B = A^TA$ is symmetric
+            - then $\nabla_w w^TBw = 2Bw$
+        - set the gradient equal to 0 and get $A^Ty = A^TAw$, i.e. $w = (A^TA)^{-1}A^Ty$
+  - note that $A^TA$ is invertible if the columns of $A$ are linearly independent
+    - the $j$-th column is a vector of the $j$-th components of the $x_i$
+  - $(A^TA)^{-1}A^T$ is known as $A^+$, the "pseudoinverse" of $A$
+    - $A$ is of course an $n\times d$ matrix, which is not necessarily invertible
+    - weights are $w = A^+y$
+  - to show that we have the minimum, we take the Hessian $\nabla_w^2\mathcal{L} = A^TA$, which is positive semidefinite.
+  - Note also that $\arg\min_w\mathcal{L} = \arg\min_w ||y-Aw||^2 = \arg\min_w ||y-Aw||$$
+    - in other words, the $w$ that we found minimized the euclidean distance between $y$ and $Aw$
+      - in the ideal case, $y = Aw$, but as before $A$ is not necessarily invertible; the pseudoinverse is as close as we can get
+- Note that we assume that the columns of $A$ are linearly independent
+
+## 9.7: Basis functions MLE
+
+- we considered $f(x) = w^T\phi(x) = w^Tz$, where $\phi: \mathbb{R}\rightarrow\mathbb{Z}$ and $z = \phi(x)$
+- define $\Phi$ as a $n\times m$ matrix where each row is $\phi(x_i)$
+- Then the weights are $w = \Phi^+y = (\Phi^T\Phi)^{-1}\Phi^Ty$
