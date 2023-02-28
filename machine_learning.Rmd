@@ -864,13 +864,62 @@ output:
     - $A$ is of course an $n\times d$ matrix, which is not necessarily invertible
     - weights are $w = A^+y$
   - to show that we have the minimum, we take the Hessian $\nabla_w^2\mathcal{L} = A^TA$, which is positive semidefinite.
-  - Note also that $\arg\min_w\mathcal{L} = \arg\min_w ||y-Aw||^2 = \arg\min_w ||y-Aw||$$
+  - Note also that $\arg\min_w\mathcal{L} = \arg\min_w ||y-Aw||^2 = \arg\min_w ||y-Aw||$
     - in other words, the $w$ that we found minimized the euclidean distance between $y$ and $Aw$
       - in the ideal case, $y = Aw$, but as before $A$ is not necessarily invertible; the pseudoinverse is as close as we can get
 - Note that we assume that the columns of $A$ are linearly independent
 
 ## 9.7: Basis functions MLE
 
-- we considered $f(x) = w^T\phi(x) = w^Tz$, where $\phi: \mathbb{R}\rightarrow\mathbb{Z}$ and $z = \phi(x)$
+- we considered $f(x) = w^T\phi(x) = w^Tz$, where $\phi: \mathbb{R}^d\rightarrow\mathbb{R}^m$ and $z = \phi(x)$
 - define $\Phi$ as a $n\times m$ matrix where each row is $\phi(x_i)$
 - Then the weights are $w = \Phi^+y = (\Phi^T\Phi)^{-1}\Phi^Ty$
+
+# 10: Bayesian Linear Regression
+
+## 10.1: Bayesian Linear Regression
+
+- Why not use MLE? Overfitting
+- Why not use MAP? No representation of uncertainty in $w$ or the predictions $y$
+  - what if the $x$ is far outside of the training data: we should be unsure/have large error bars
+- Why Bayesian? It optmizes the loss function and gives us the prediction distribution $p(y|x,D)$, which is what we really want.
+- Setup:
+  - $D = ((x_1,y_1),\dots,(x_n,y_n))$
+  - $x_i\in \mathbb{R}^d$
+  - $y_i\in \mathbb{R}$
+- Model:
+  - $Y_1,\dots, Y_n$ independent given $w$, $Y_i\sim N(w^Tx_i,a^{-1})$
+    - $a = 1/\sigma^2$ is the "precision"
+  - $w\sim N(0,b^{-1}I)$
+    - we model $w$ as normally distribited with variance $b^{-1}I$, where $b>0$
+    - $I$ is the identity matrix - thus the $w_i$ are iid
+- assume $a$ and $b$ are known, so that our parameters are $\theta = w$
+
+## 10.1-10.2: Posterior for linear regression
+
+- Remark: can replace $x_i$ with $\phi(x_i)$ and thus model nonlinearities
+- Likelihood: $p(D|w) = \propto \exp\big(-\frac{a}{2}(y-Aw)^T(y-Aw)\big)$
+  - $A$ is the $n\times d$ design matrix with rows equal to the $x_i$
+  - $y = (y_1,\dots,y_n)^T$
+- Posterior: $p(w|D)\propto p(D|w)p(w) \propto \exp \big(-\frac{a}{2}(y-Aw)^T(y-Aw)-\frac{b}{2}w^Tw\big)$
+  - the exponent is a quadratic in $w$, so is also Gaussian
+  - $a(y-Aw)^T(y-Aw)+bw^Tw = ay^Ty-2aw^TA^Ty + w^T(aA^TA + bI)w$
+  - matching with the (note) below, we define
+    - $\Lambda = aA^TA + bI$
+    - $\mu = a\Lambda^{-1}A^Ty$
+  - and get $p(w|D)\propto N(\mu, \Lambda^{-1})$
+  - check that $\Lambda$ is invertible
+    - if $B$ is a square matrix, consider $B+cI$, with $c\in\mathbb{R}$, $I$ is identity
+    - Suppose that $\mu$ is an eigenvector of $B$ with eigenvalue $\lambda$
+      - then $(B+cI)u = Bu + cIu = \lambda u + cu = (\lambda + c)u$
+      - thus $u$ is an eigenvector of $B+cI$ with eigenvalue $\lambda + c$
+    - the precision $b > 0$; $aA^TA$ is positive semidefinite
+      - thus the eigenvalues of $aA^TA + bI$ are all greater than 0
+      - and $\Lambda$ is invertible.
+  - the MAP estimate is then $\mu = a\Lambda^{-1}A^Ty = (A^TA + \frac{b}{a}I)^{-1}A^Ty$
+    - the MLE estimate from before is $(A^TA)^{-1}A^Ty$
+    - the difference is $b/aI$ in the inverse. $b/aI$ is known as the "regularization parameter" related to $-b/2 w^Tw$
+- (note) For a general multivariate Gaussian, the exponent contains $(x-\mu)^T\Lambda(x-\mu)$,
+  - $\Lambda^{-1}$ is the symmetric covariance matrix
+  - This is then $x^T\Lambda x - 2x^T\Lambda \mu + C$, where $C$ is a constant
+  - note: the $\Lambda$ is often represented by $\Sigma^{-1}$ in official definitions
