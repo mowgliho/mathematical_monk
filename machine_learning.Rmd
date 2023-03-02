@@ -948,3 +948,41 @@ output:
   - $\mu$ is the posterior mean for the weights $w$
   - so the mean is like we used the MAP estimate for $\theta$
 - all this math worked because the exponents were all quadratics - and then we kept completing the square.
+
+# 11: Estimators
+
+## 11.1 Estimators
+
+- Now assume data is $D = (X_1,\dots,X_n)$, with $X_i$ random variables
+  - i.e. the data is a random variable
+- Definition: a "statistic" is a random variable $S$ that is a function of the data $D$, e.g. $S = f(D)$
+- Definition: an "estimator" is a statistic intended to approximate a parameters governing the distribution of $D$
+- Notation: 
+  - $\hat{\theta}$ denotes an estimator of $\theta$
+  - $\hat{\theta}_n$ emphasizes the dependence on $n$
+- Example: $X_1,\dots,X_n\sim N(\mu,\sigma^2)$ iid, we can consider the following estimators as functions of the data $D$
+  - sample mean: $\hat{\mu} = \bar{x} = \frac{1}{n}\sum_i x_i$
+  - biased sample variance $\hat{\sigma^2} = \frac{1}{n}\sum_i (x_i-\bar{x})^2$
+    - $\sigma^2= \mathbb{E}((x-\mu)^2)$
+  - unbiased sample variance $\hat{s^2} = \frac{1}{n-1}\sum_i (x_i-\bar{x})^2$
+- Definition: the "bias" of an estimator $bias(\hat{\theta}) = \mathbb{E}\hat{\theta} - \theta$
+- Definition: An estimator $\hat{\theta}$ is "unbiased" if $bias(\hat{\theta}) = 0$
+- Examples: 
+  - $\hat{\mu}$ is unbiased: $\mathbb{E}\hat{\mu} = \mathbb{E}\frac{1}{n}\sum_i X_i = \frac{1}{n}\sum \mathbb{E}X_i = \frac{1}{n}\sum _i \mu = \mu$
+- Let's prove that the biased/unbiased sample variances are biased/unbiased
+  - Note that $\sigma^2 = \mathbb{E}(X^2) - (\mathbb{E}(X))^2 = \mathbb{E}(X^2) - \mu^2$
+  - for each $i$, $\mathbb{E}(X_i-\bar{X})^2 = \mathbb{E}(X_i^2) - 2\mathbb{E}(X_i\bar{X}) + \mathbb{E}\bar{X}^2$
+    - each part:
+      - $\mathbb{E}(X_i^2) = \sigma^2 + \mu^2$
+      - $\mathbb{E}(X_i\bar{X}) = (1/n)(\mathbb{E}X_i^2 + (n-1)\mathbb{E}_{i\neq j}(x_ix_j)) = (1/n)(\sigma^2 + \mu^2 + (n-1)(\mu^2)) = \frac{\sigma^2}{n} + \mu^2$
+      - $\mathbb{E}(\bar{X}^2) = \frac{1}{n^2}\mathbb{E}(\sum_i x_i)^2 = \frac{1}{n^2}\big(n\mathbb{E}(x^2) + (n^2-n)\mathbb{E}(x)\mathbb{E}(x)\big) = \frac{1}{n^2}\big(n(\sigma^2 + \mu^2) + (n^2-n)\mu^2\big) = \frac{\sigma^2}{n} + \mu^2$
+    - combining: $\sigma^2 + \mu^2 - 2(\sigma^2/n + \mu^2) + \sigma^2/n + \mu^2 = \frac{n-1}{n}\sigma^2$
+  - Thus $\mathbb{E}\hat{s^2} = \frac{1}{n-1}\mathbb{E}\sum_i (X_i-X)^2 = \frac{n}{n-1}\mathbb{E}(X_i-X)^2 = \frac{n}{n-1}\frac{n-1}{n}\sigma^2 = \sigma^2$, and the unbiased estimator is unbiased.
+  - Similarly, $\mathbb{E}\hat{\sigma^2} = \frac{n-1}{n}\sigma^2$, so underestimates
+
+# 11.2: Decision theory terminology in different contexts
+
+- Contexts: General Setup, Estimators, and Regression/Classification
+- In the general setup, we have a state $s$ and data $D$. We take an action $a = \delta(D)$ and get a loss $L(s,a)$, where $\delta$ is a decision rule.
+- In the Estimator setup, we have a parameter $\theta$ and data $D$. We estimate $\hat{\theta} = g(D)$ and get a loss $L(\theta, \hat{\theta})$, where $g$ is an estimator function.
+- in Regression/Classification, we have a target value $y$ and a point $x$. We predict $\hat{y} = f(x)$ and get a loss $L(y,\hat{y})$, where $f$ is a predictor function.
