@@ -895,16 +895,16 @@ output:
     - $I$ is the identity matrix - thus the $w_i$ are iid
 - assume $a$ and $b$ are known, so that our parameters are $\theta = w$
 
-## 10.1-10.2: Posterior for linear regression
+## 10.2-10.3: Posterior for linear regression
 
 - Remark: can replace $x_i$ with $\phi(x_i)$ and thus model nonlinearities
-- Likelihood: $p(D|w) = \propto \exp\big(-\frac{a}{2}(y-Aw)^T(y-Aw)\big)$
+- Likelihood: $p(D|w) \propto \exp\big(-\frac{a}{2}(y-Aw)^T(y-Aw)\big)$
   - $A$ is the $n\times d$ design matrix with rows equal to the $x_i$
   - $y = (y_1,\dots,y_n)^T$
 - Posterior: $p(w|D)\propto p(D|w)p(w) \propto \exp \big(-\frac{a}{2}(y-Aw)^T(y-Aw)-\frac{b}{2}w^Tw\big)$
   - the exponent is a quadratic in $w$, so is also Gaussian
   - $a(y-Aw)^T(y-Aw)+bw^Tw = ay^Ty-2aw^TA^Ty + w^T(aA^TA + bI)w$
-  - matching with the (note) below, we define
+  - completing the square and matching with the (note) below, we define
     - $\Lambda = aA^TA + bI$
     - $\mu = a\Lambda^{-1}A^Ty$
   - and get $p(w|D)\propto N(\mu, \Lambda^{-1})$
@@ -918,8 +918,33 @@ output:
       - and $\Lambda$ is invertible.
   - the MAP estimate is then $\mu = a\Lambda^{-1}A^Ty = (A^TA + \frac{b}{a}I)^{-1}A^Ty$
     - the MLE estimate from before is $(A^TA)^{-1}A^Ty$
-    - the difference is $b/aI$ in the inverse. $b/aI$ is known as the "regularization parameter" related to $-b/2 w^Tw$
+    - the difference is $\frac{b}{a}I$ in the inverse. $\frac{b}{a}I$ is known as the "regularization parameter" related to $-b/2 w^Tw$
+      - if $b$ goes to $0$, then the prior becomes more uniform - we approach universal prior and the MLE
 - (note) For a general multivariate Gaussian, the exponent contains $(x-\mu)^T\Lambda(x-\mu)$,
   - $\Lambda^{-1}$ is the symmetric covariance matrix
   - This is then $x^T\Lambda x - 2x^T\Lambda \mu + C$, where $C$ is a constant
   - note: the $\Lambda$ is often represented by $\Sigma^{-1}$ in official definitions
+
+## 10.4-10.7: Predictive distribution for linear regression 
+
+- Let's calculate the predictive distribution. Given $x$, we want to calculate  $p(y|x,D)$
+- $p(y|x,D) = \int p(y|x,D,w)p(w|x,D) dw = \int p(y|x,w)p(w|D)dw$
+  - $\int N(y|w^Tx,a^{-1})N(w|\mu,\Lambda^{-1})dw\propto_y \int \exp \big(\frac{a}{2}(y-w^Tx)^2 - \frac{1}{2}(w-\mu)^T\Lambda(w-\mu)\big)dw$
+    - we expand this, complete the square, etc
+    - it ends up $\propto \int N(w|m,L)g(y)dw$, where
+      - $L = axx^T+\Lambda$
+      - $m = L^{-1}(ayx + \Lambda\mu)$
+      - $g(y) = \exp\big(\frac{1}{2} m^TLm - \frac{1}{2}ay^2\big)$
+    - then we pull the $g(y)$ out, and the integral evaluates to 1
+      - note that $m$ depends on $y$, but this doesn't matter as the integral still is 1
+    - thus $p(y|x,D)\propto \exp\big(\frac{1}{2} m^TLm - \frac{1}{2}ay^2\big)$
+      - now we complete the square again with this function to get another gaussian in $y$
+      - $p(y|x,D)\propto N(y|u,\lambda^{-1})$ with
+        - $\lambda^{-1} = \big(a(1-ax^TL^{-1}x)\big)^{-1} = \frac{1}{a} + x^T\Lambda^{-1}x$
+        - $u = \frac{1}{\lambda}ax^TL^{-1}\Lambda\mu = \mu^Tx$
+        - the second equality uses the Sherman-Morrison formula and some more computations
+          - have to show that $L$ is invertible, which is another computation
+- The mean of the distribution is $\mu^Tx$
+  - $\mu$ is the posterior mean for the weights $w$
+  - so the mean is like we used the MAP estimate for $\theta$
+- all this math worked because the exponents were all quadratics - and then we kept completing the square.
