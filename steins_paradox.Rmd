@@ -1,0 +1,74 @@
+---
+title: "Stein's Paradox"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+---
+
+# Background
+
+- Mentioned in Machine Learning 11.5
+- Explained in: https://joe-antognini.github.io/machine-learning/steins-paradox
+
+# Setup
+
+- Data: $D = \{x\}$, i.e.
+- From an $n$-dimensional Gaussian
+  - mean $\mu$
+  - covariance $I$, i.e. the identity
+- Estimate the mean $\hat{\mu}$
+  - default estimator is $\hat{\mu} = x$
+  - Stein estimator is $\hat{\mu} = ReLU\big(1 - \frac{n-2}{|x|^2}\big)x$
+    - for $|x| < \frac{1}{\sqrt{n-2}}$, $\hat{\mu} = 0$
+    - otherwise, shrink $x$ towards the origin
+    - as $x$ goes to $\infty$, keep $x$ as it is
+- Loss function $\mathcal{L} = |\hat{\mu}-\mu|^2$
+
+# Statement
+
+- For $n\geq 3$, the expected loss from the Stein Estimator is lower than the expected loss from the Default Estimator
+
+# Thoughts
+
+- But the origin is arbitrary!
+  - HandWavy: It kind of isn't, because if we picked a random point in $\mathbb{R}^n$, it'd be very far from the origin - so we kind of have a prior on it that it's small.
+  - The origin affects the scaling of the default estimator
+    - For example, suppose that true $\mu = (2,0,0,\dots)$
+      - consider the sphere of points $S_d = \{x\in\mathbb{R}^n| |x| = d\}$
+      - define weight $W_d = \int_{S_d} N(\mu,I)$
+      - then $W_{2.1} > W_{1.9}$, or really $W_{2+\epsilon} > W_{2-\epsilon}$
+      - then the expected $\mathbb{E}(|\hat{\mu}|) < |\mu|$
+      - in other words, the point of origin causes us to overestimate $|\mu|$
+    - This doesn't work for $n=1$, as $W_{2+\epsilon} = W_{2-\epsilon}$ for $n=1$
+    - Does hold for $n \geq 2$
+- The default estimator is unbiased but with a high variance
+- The Stein estimator reduces variance (by shrinking the distribution), but introduces a bit of bias (towards smaller numbers)
+  - for $n\geq 3$, the expected reduction in variance is larger than the introduced increase in bias.
+
+# Derivation of Stein Estimator
+
+- WLOG, Suppose that $\mu = (\mu_1,0,0,\dots,)$
+- Suppose that we get $x = (x_1,\dots,x_n)$
+- The default estimator loss is now $(x_1 - \mu_1)^2 + \sum_{i > 1} x_i^2$
+  - Let $\rho = \sum_{i>1} x_i^2$
+- As we don't know the true $\mu$ in practice, we can only move along the origin to $x$ axis.
+- Suppose that $x_1 = \mu_1$
+  - Consider the triangle with the origin, $x$, and $\mu$
+  - it's a right triangle with lengths $|x|$, $|\mu|$ and $\rho$
+  - Suppose we moved along the origin to $x$ so that our new point was in the direction of $x$ but with magnitude $|\mu|$
+    - This occurs at $\big(1-\frac{\rho}{|x|^2}\big)x$
+- Take this as our procedure
+  - don't want to shrink past zero (variance increases), so clamp with ReLU
+  - obtain Stein estimator
+- Of course, $x_1\neq \mu_1$ in general, but this is still a pretty good procedure
+
+# Notes
+
+- for $n=1$, the argument above doesn't work as $\rho$ doesn't exist
+- for $n=2$, it helps, but not enough to be better than the default
+- Stein estimator does not minimize the risk either - it is also inadmissible
+- In particular, it isn't smooth - and apparently all admissible estimators must be smooth
+- There's a correspondence between $n$ and random walk returning to the origin
+- Similar to L2 regularization - inroduce bias to reduce variance and not overfit
+- In neural networks, the origin is actually special (zero output in parts); variation causes parameters to drift around the true minimum.

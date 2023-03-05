@@ -1,4 +1,4 @@
-PLAYLISTS = information_theory machine_learning
+PLAYLISTS = information_theory machine_learning steins_paradox
 
 .PHONY: playlists $(PLAYLISTS)
 
