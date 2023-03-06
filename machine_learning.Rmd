@@ -754,7 +754,7 @@ output:
   - i.e. the predictive distribution $p(y|x,D)$
   - $p(y|x,D) \propto_y p(y,x,D) = \int_\theta p(x,y,D|\theta)p(\theta) d\theta = \int_\theta p(x,y|\theta)p(\theta)\prod_{i=1}^np(x^i,y^i|\theta)d\theta$
     - using conditional independence $p(x,y,D|\theta) = p(x,y|\theta)p(D|\theta)$
-  - $p(x,y|\theta) = \pi(y)\prod_{j,k} r_{jk}(x_j)^{I(y=k)}$ by definition and bayes assumption
+  - $p(x,y|\theta) = \pi(y)\prod_{j,k} r_{jk}(x_j)^{I(y=k)}$ by definition and Bayes assumption
   - By independence and definition, $\prod_{i=1}^n p(x^i,y^i|\theta) = \prod_i Cat(y^i|\pi)\prod_{jk}Cat(x^i_j|r_{jk})^{I(y_i=k)}$
   - Assuming that $\pi$ and $r$ are independent, $p(\theta) = Dir(\pi|\alpha)\prod_{j,k}Dir(r_{jk}|\beta)$
   - Thus, $p(y|x,D) \propto \int_\theta p(x,y|\theta) Dir(\pi|\alpha + c)\prod_{jk}Dir(r_{jk}|\beta + d_{jk}) d\theta$
@@ -1051,7 +1051,7 @@ output:
   - natural estimator $\delta_1(D) = x$, $MSE(\delta_1) = R(\theta, \delta_1) = 1$
   - silly estimator $\delta_0(D) = 0$, $MSE(\delta_0) = R(\theta, \delta_0) = \theta^2$
   - in other words, if $\theta\in [-1,1]$, the silly estimator is better than the natural estimator
-- Definition: Given decision rules $\delta$ and $\delta'$, we say that $\delta$ "dominates" $\delta'$ if $R(\theta,\delta)\leq R(\theta,\delta')$ for all $\theta\in\Theta$, and $R(\theta,d) < R(\theta,\delta')$ for some $\theta in\Theta$
+- Definition: Given decision rules $\delta$ and $\delta'$, we say that $\delta$ "dominates" $\delta'$ if $R(\theta,\delta)\leq R(\theta,\delta')$ for all $\theta\in\Theta$, and $R(\theta,d) < R(\theta,\delta')$ for some $\theta \in\Theta$
 - Definition: A decision rule $\delta$ is "inadmissible" if there is another decision rule $\delta'$ that dominates $\delta$
 - Definition: A decision rule that is not inadmissible then it is "admissible", i.e. there is no decision rule that dominates it.
 - Fact: Both $\delta_1$ and $\delta_0$ from above are admissible
@@ -1071,17 +1071,84 @@ output:
 # 11.8: Bayesian decision theory
 
 - Previous stuff was from a frequentist perspective (expectation of data given parameter)
-- Now we do a Bayesian perspective
-  - Bayesian expected loss: $\rho(\pi, \delta(D)) = \mathbb{E}(L(\theta,\delta(D))|D)$
-  - Bayesian Risk: $r(\pi,\delta) = \mathbb{E}(L(\theta,\delta(D)))$
+- Now we do a Bayesian perspective: given a decision rule $\delta$ on $D$
+  - Average over $\theta$: Bayesian expected loss: $\rho(\pi, \delta(D)) = \mathbb{E}(L(\theta,\delta(D))|D)$
+  - Average over $\theta$ and $D$: Bayesian Risk: $r(\pi,\delta) = \mathbb{E}(L(\theta,\delta(D)))$
 - We can rewrite the Bayesian Risk as $\mathbb{E}(\mathbb{E}(L(\theta,\delta(D))|D)) = \mathbb{E}(\rho(\pi,\delta(D)))$
   - in other words, to reduce the Risk we can just reduce the expected loss for each $D$
 - Definition: A "generalized Bayes rule" is a decision rule $\delta$ minimizing $\rho(\pi,\delta(D))$ for each $D$
 - Definition: A "Bayes rule" is a decision rule that minimizes $r(\pi,\delta)$
 - Remark: A generalized Bayes rule is a Bayes rule, but a Bayes rule is not necessarily a generalized Bayes rule
-  - If $r(\pi,d) = \infty$ for all $\delta$ then anything is a bayes rule (e.g. improper prior), but a GBR still makes sense
+  - If $r(\pi,d) = \infty$ for all $\delta$ then anything is a Bayes rule (e.g. improper prior), but a GBR still makes sense
   - On sets of $\pi$ where $\pi = 0$ (e.g. 0 prior), then a Bayes rule can be arbitrary on these sets, but the GBR is still sensible.
 - Complete Class Theorems: Under mild conditions
   - Every GBR (for a proper $\pi$) is admissible
   - Every admissible decision rule is a GBR for some (possibly improper) prior $\pi$
 - note that admissibility does not guarantee "non-silliness" as we saw above.
+
+# 12: Model Selection
+
+## 12.1: Model selection: introduction and examples
+
+- Not about different types of models
+- About different complexities of models i.e. "complexity selection" or the flexibility of a model to fit/explain data
+- Example: Linear Regression using MLE to find $f(x) = w^T\phi(x)$
+  - $x \in \mathbb{R}$
+  - Polynomial basis functions $\phi_k(x) = x^k$, $\phi = (\phi_0,\dots,\phi_B)$
+  - If $B=1$, we get a line, $B=3$ is a cubic, etc.
+  - As $B$ increases, the complexity increases - can overfit
+- Example: Bayesian Linear Regression or MAP
+  - same setup as before
+  - $w \sim N(0,\sigma^2I)$
+  - Now we have to choose $B$ or $\sigma^2$ as complexity controlling parameters
+    - if $\sigma^2$ is small, we bias towards functions that have small $w$
+- Example: Classification (kNN)
+  - have to choose the parameter $k$
+  - smaller $k$, we overfit
+  - $k=1$, we get a Voronoi diagram
+
+## 12.2: Bias-variance in model selection
+
+- For an estimator, the mean squared error for the estimator $MSE = bias^2 + variance$
+  - for small model complexity, have high bias and low variance
+    - model doesn't change too much as data changes
+      - can bias around wrong value
+      - but doesn't change too much
+  - for large model complexity, have low bias and high variance
+    - model changes a lot as data changes
+      - low bias: overfits as it fits the data better (the data centers around the truth)
+      - but variance is large as data changes
+- There's a tradeoff/need to find the right model complexity
+- can think of bias/variance for a particular candidate $x$, or integrate over the possibilities of $x$
+  - same conclusions
+- Note: the Equation only applies to square loss, but the concept can hold
+
+## 12.3: Model complexity parameters
+
+- Complexity controlling parameters
+  - not parameters used to fit the data
+    - e.g. $B$ in 12.1 (but not $w$)
+  - In Bayesian models, tend to be hyperparameters, e.g. parameters of the prior distribution
+    - e.g. $\sigma^2$ in 12.1
+- isn't really a clear cut distinction - use best judgement
+- control ability to fit the data
+
+## 12.4: Bayesian model selection
+
+- Setup
+  - We're looking for $p(y|x,\theta,m)$
+  - $m$ defines the model
+    - number of basis functions
+    - variance for hyperparameter/prior
+    - other complexity parameters
+  - both $\theta$ and $M\sim m$ are random variables 
+- In "Bayesian model averaging", we expand $p(y|x,D) = \int_M p(y|x,D,m)p(m|x,D) dm$
+  - we assume $x$ doesn't affect $m$, this becomes $\int_M p(y|x,D,m)p(m|D)dm$
+  - $y$ is independent of the data given $\theta$, this becomes $\int_M\int_\theta p(y|x,\theta,m)p(\theta|D,m)d\theta p(m|D)dm$
+  - we can also approximate with a point mass $p(y|x,D)\approx p(y|x,D,m*)$, where $m* \in \arg\max_M p(m|D)$
+    - $m*$ is essentially a MAP estimate for $m$
+  - this isn't really model selection per se as we are averaging on models
+- Type II MAP is $m* \in \arg\max_M p(m|D)$ (not a standard name)
+- Type II MLE/Evidence Approximation/Empirical Bayes is $m* \in \arg\max_M p(D|m)$
+  - $p(D|m)$ is the marginal likelihood
+- as before, the MLE is a MAP with a uniform prior on models $m$ (improper if necessary)
