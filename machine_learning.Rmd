@@ -1121,7 +1121,7 @@ output:
 - There's a tradeoff/need to find the right model complexity
 - can think of bias/variance for a particular candidate $x$, or integrate over the possibilities of $x$
   - same conclusions
-- Note: the Equation only applies to square loss, but the concept can hold
+- Note: the Equation only applies to square loss, but the concept is useful to think of in general
 
 ## 12.3: Model complexity parameters
 
@@ -1137,18 +1137,147 @@ output:
 
 - Setup
   - We're looking for $p(y|x,\theta,m)$
-  - $m$ defines the model
+  - $m$ defines the model, e.g.
     - number of basis functions
     - variance for hyperparameter/prior
     - other complexity parameters
   - both $\theta$ and $M\sim m$ are random variables 
 - In "Bayesian model averaging", we expand $p(y|x,D) = \int_M p(y|x,D,m)p(m|x,D) dm$
-  - we assume $x$ doesn't affect $m$, this becomes $\int_M p(y|x,D,m)p(m|D)dm$
+  - we assume $x$ doesn't affect the choice of $m$, this becomes $\int_M p(y|x,D,m)p(m|D)dm$
   - $y$ is independent of the data given $\theta$, this becomes $\int_M\int_\theta p(y|x,\theta,m)p(\theta|D,m)d\theta p(m|D)dm$
-  - we can also approximate with a point mass $p(y|x,D)\approx p(y|x,D,m*)$, where $m* \in \arg\max_M p(m|D)$
-    - $m*$ is essentially a MAP estimate for $m$
   - this isn't really model selection per se as we are averaging on models
-- Type II MAP is $m* \in \arg\max_M p(m|D)$ (not a standard name)
-- Type II MLE/Evidence Approximation/Empirical Bayes is $m* \in \arg\max_M p(D|m)$
+- we can also approximate with a point mass $p(y|x,D)\approx p(y|x,D,m')$, where $m' \in \arg\max_M p(m|D)$
+  - $m'$ is essentially a MAP estimate for $m$
+- Type II MAP is $m' \in \arg\max_M p(m|D)$ (not a standard name)
+- Type II MLE/Evidence Approximation/Empirical Bayes is $m' \in \arg\max_M p(D|m)$
   - $p(D|m)$ is the marginal likelihood
 - as before, the MLE is a MAP with a uniform prior on models $m$ (improper if necessary)
+
+## 12.5-12.7: Cross-validation
+
+- $D = ((x_1,y_1),\dots,(x_n,y_n))$, $m\in \{1,\dots,c\}$
+  - the possible model complexities are finite set of size $c$ (if $m$ is characterized by a continuous function, take some points from it)
+- We want to find $m$ to minimize expected loss, i.e. $\epsilon_m = \mathbb{E} \mathcal{L}(Y,f_m(X))$
+  - "expected" under the true distribution $p \sim (X,Y)$, which we don't know of course
+- Thought experiment
+  - suppose we had (with both distributed as $p$)
+    - Data: $D = ((x_1,y_1),\dots,(x_n,y_n))$
+    - Test set $T = ((x'_1,y'_1),\dots,(x'_n,y'_n))$
+  - then we can train on the dataset and test on the test set, and take the best model
+- so we just split $D$ into Training and Validation Sets
+  - for each option of $m$, Train on training set, get error on validation set
+  - this is "validation"
+  - test on test set at the end.
+- maybe the split is not representative
+  - do a bunch of splits instead: $k$-fold Cross Validation
+    - randomly permute the data
+    - split the data into $k$ equally sized parts or "folds"
+    - for each fold, use it as the validation set - and the rest of the data as the training set.
+    - get $k$ rounds
+    - for each round $i$ and model $m$, we get an estimate $\hat{\epsilon}_m(i)$
+    - we estimate $\hat{\epsilon}_m = \frac{1}{k}\sum_i \hat{\epsilon}_m(i)$
+    - choose $m'$ that minimizes $\hat{\epsilon}_m$
+    - Train a model on all of $D$ with $m'$
+- CV options
+  - people often use $k$ fold with $k$ as 5 or 10
+  - or Leave-one-out CV: each point is a fold, so do $n$ folds
+  - Random subsamples: have $R$ rounds, for each round take a random subset of size $s$ from $D$ - use it as the validation set and do the same.
+    - could be bad because a "hard" point could show up multiple times, so we overestimate error
+      - or not show up at all, so we understimate rror
+    - is nice as we size of the validation set $s$ and the number of rounds $R$
+      - instead of $s = n/k$ and $R = k$ as in $k$-fold
+- if do $k$-fold, how do we choose $k$?
+  - Given a $k$, CV gives us an estimator $\hat{\epsilon}_m^k$ of $\epsilon_m$
+  - Thus we should want to minimize the loss $\mathbb{E}\mathcal{L}(\epsilon_m, \hat{\epsilon}^k_m)$
+  - i.e. we consider the process for choosing the parameter $k$ to choose the parameter $m$
+  - If we pick $\mathcal{L}$ as the MSE, we can decompose into bias/variance
+    - If $k$ is large (e.g. $n$ - leave one out cross validation)
+      - models don't change too much from each other: low bias with respect to $\epsilon_m$ for the $m$ that we pick at the end
+      - we get a very different estimate of $\epsilon_m$ for each fold: high variance
+    - if $k$ is small (e.g. $k=2$)
+      - train with less data, so we are biased to estimate higher error $\epsilon_m$ (models are just worse)
+      - low variance as lots of validation points
+    - people generally use $k=10$ 
+- note: bayesian model selection can estimate in a more continous way with higher dimensions
+  - so could be better in these situations than $k$-fold CV
+
+## 12.8: Other approaches to model selection
+
+- options
+  - Bayesian Model Selection
+  - Cross Validation
+  - Information Criterion
+    - AIC (Akaike Information Criterion)
+    - BIC (Bayesian Information Criterion)
+    - penalize model for having more parameters
+  - MDL (Minimum Description Length)
+    - basic idea is to choose a model with the smallest "description length"
+  - VC (Vapnik-Chervonenkis dimension)
+    - for classification, idea is to penalize models that "separate" more complex data
+    - i.e. "have more wiggly" decision boundaries
+- AIC, BIC, and MDL are similar to the "Type II MAP": get $m$ to maximize $p(m|D)\propto p(D|m)p(m)$
+  - or maximize $\log p(D|m) + \log p(m)$
+  - AIC, BIC, MDL in some sense put a prior (perhaps improper) on $p(m)$
+
+# 13: Graphical models
+
+## 13.1-13.2: Directed graphical models - introductory examples
+
+- (Directed) graphical models:
+  - Also known as "Bayesian" networks, but this is a bit of a misnomer
+  - not really a model, but more of a "conditional independence diagram"
+  - about factorizing the probability distribution
+  - good notational device that allows us to visualize conditionally independent distributions and inference algorithms (like dynamic programming, markov chain monte carlo, etc)
+- Conditional Independence is important for tractable inference
+- Thinking "Graphically"/Network
+  - Setup 1
+    - Let $A$, $B$, and $C$ be random variables.
+    - Consider $p(a,b,c) = p(c|a,b)p(a,b) = p(c|a,b)p(b|a)p(a)$
+      - note that if $p(a,b)=0$, then $p(c|a,b)$ is undefined - but here we interpret $p(c|a,b)p(a,b) = 0$
+      - A natural graph for this could have
+        - a node for $A$, $B$, and $C$
+        - $C$ is conditioned on $A$ and $B$, so make edges (directed) from $A$ and $B$ to $C$
+        - $B$ is conditioned on $A$, so make an edge from $A$ to $B$
+        - This is a DAG (Directed Acyclic Graph (no cycles))
+    - We could have factored in a different way, and gotten a different graph though
+    - Notation: $B\perp C |A$ signifies that $B$ is conditionally independent of $C$ given $A$.
+    - If $B\perp C|A$, then $p(c|a,b) = p(c|a)$
+      - now our diagram has two edges from $A$ to $B$ and $C$
+      - graph now represents something about the distribution
+  - Setup 2
+    - $p(x_1,\dots,x_5)$
+    - make a graph with 5 nodes for the $x_i$
+    - Let's factor $p(x_1,\dots,x_5) = p(x_1)p(x_2|x_1)p(x_3|x_1,x_2)p(x_4|x_1, x_2, x_3)p(x_5|x_1,x_2,x_3,x_4)$
+      - we can build the same graph as before
+        - edge from 1 to 2
+        - edges from 1 and 2 to 3
+        - edges from 1 and 2 and 3 to 4
+        - edges from 1 and 2 and 3 and 4 to 5
+      - this is a DAG too
+      - suppose $x_3\perp x_2|x_1$, then we can erase an edge
+      - given more CI, we can also erase more edges, and we get a graph that codifies stuff about the distribution
+  - Setup 3
+    - Given a DAG, we can follow the edges and reverse engineer a rule for probability distribution.
+      - $p(x_1,\dots,x_n) = \prod_i p(x_i|S_i)$, where $S_i$ are the $x_j$ with arrows that go to $x_i$
+      - this doesn't specify/define a distribution, but characterizes some properties that probability distributions with this DAG have
+
+## 13-3-13.4: Directed graphical models - formalism
+
+- Notation: A DAG (Directed Acyclic Graph)
+  - Directed: edges are oriented, have start/end
+  - Acyclic: no directed cycles, which is equivalent to having an ordering of nodes such that an arrow from $i$ to $j$ implies that $i < j$
+    - under such an ordering, we call the DAG "ordered"
+- Notation: $pa(i)$ is the "parents" of vertex $i$ - i.e. all the vertices $j$ such that there's an arrow $j$ to $i$
+- Notation: Given a vector $x = (x_1,\dots,x_n)$, we define $x_A = (x_i | i\in A)$, i.e. the tuple defined by $A$. Eg $x_{pa(i)}$ are the components of the parents of $i$
+- Definition: Given $X = (X_1,\dots,X_n)\sim p$ and an ordered DAG $G$ on $n$ vertices, we say "$X$ respects $G$ (or $p$ respects $G$)" if we can factor the joint distribution $p(x_1,\dots,_n) = \prod_i p(x_i|x_{pa(i)})$ for all $x = (x_1,\dots,x_n)$
+- Remark: This does not imply that any variables are conditionally dependent. Only implies that certain variables are conditionally independent.
+  - Example: Suppose we have $x_1,x_2,x_3$ that are mutually independent. Then $p(x_1,x_2,x_3) = p(x_1)p(x_2)p(x_3)$.
+    - Then this distribution respects all DAGs with 3 nodes.
+      - e.g. $p(x_i|x_j) = p(x_i)$ for all $i \neq j$
+- Terminology: A "complete directed graph" is a graph in which there are edges between all pairs of vertices $i$ and $j$.
+  - Example: any distribution on $n$ variables respects any complete DAG. (decompose $p(x)$)
+- Remark: We can combine random variables into vectors
+  - e.g. look at $(X,Y,Z)$ where $X = (X_1,\dots,X_{n_x})$ etc.
+    - i.e. $X$, $Y$, and $Z$ are themselves vectors of random variables
+- Remark: if the factors in the decomposition are normalized conditional distributions, then the product of the joint is also a normalized distribution.
+- DAGs are useful for tractable/efficient inference
