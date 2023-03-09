@@ -1240,8 +1240,8 @@ output:
         - $B$ is conditioned on $A$, so make an edge from $A$ to $B$
         - This is a DAG (Directed Acyclic Graph (no cycles))
     - We could have factored in a different way, and gotten a different graph though
-    - Notation: $B\perp C |A$ signifies that $B$ is conditionally independent of $C$ given $A$.
-    - If $B\perp C|A$, then $p(c|a,b) = p(c|a)$
+    - Notation: $C\perp B |A$ signifies that $C$ is conditionally independent of $B$ given $A$.
+    - If $C\perp B|A$, then $p(c|a,b) = p(c|a)$
       - now our diagram has two edges from $A$ to $B$ and $C$
       - graph now represents something about the distribution
   - Setup 2
@@ -1258,7 +1258,7 @@ output:
       - given more CI, we can also erase more edges, and we get a graph that codifies stuff about the distribution
   - Setup 3
     - Given a DAG, we can follow the edges and reverse engineer a rule for probability distribution.
-      - $p(x_1,\dots,x_n) = \prod_i p(x_i|S_i)$, where $S_i$ are the $x_j$ with arrows that go to $x_i$
+      - $p(x_1,\dots,x_n) = \prod_i p(x_i|pa(i))$, where $pa(i)$ are the $x_j$ with arrows that go to $x_i$
       - this doesn't specify/define a distribution, but characterizes some properties that probability distributions with this DAG have
 
 ## 13-3-13.4: Directed graphical models - formalism
@@ -1281,3 +1281,126 @@ output:
     - i.e. $X$, $Y$, and $Z$ are themselves vectors of random variables
 - Remark: if the factors in the decomposition are normalized conditional distributions, then the product of the joint is also a normalized distribution.
 - DAGs are useful for tractable/efficient inference
+
+## 13.5: Generative process specification
+
+- a handy convention to specify a probability distribution in a compact way
+- Example:
+  - Setup
+    - $X_1$, $X_2$ are independent random variables distributed as $Bernoulli(1/2)$
+    - $X_3 \sim N(X_1 + X_2, \sigma^2)$
+    - $X_4 \sim N(aX_2 + b,1)$
+    - $X_5$ is $1$ if $X_4\geq 0$, $0$ otherwise
+  - $X_i$ depends only on $X_j$ with $j < i$
+  - Then $X = (X_1,\dots,X_N)$ respects the DAG
+- So we can look at a graph and imagine a generative process for creating it
+  - start with $x_i$ where $pa(i)$ is the empty set, and then go down the distribution
+  - gives a nice way to sample and visualize the distribution
+
+## 13.6: Graphical model for Bayesian linear regression
+
+- Examples of Directed Graphical Models
+  - Bayesian Linear Regression:
+    - Setup: $D = ((x_1,y_1),\dots,(x_n,y_n))$, $x_i\in\mathbb{R}^d$, $y_i\in\mathbb{R}$
+    - We want $f(x) = w^T\phi(x)$ for new values
+      - $w$ is the weight vectors
+      - $\phi$ are the basis functions
+    - Generative model: 
+      - $w\sim N(0,\sigma_0^2I)$
+      - $y_i\sim N(w^T\phi(x_i),\sigma^2)$ Conditionally independent given $w$
+    - Corresponds to the graph with $n+1$ nodes
+      - one node for $w$
+      - one node for each $y_i$
+      - an arrow from $w$ to each $y_i$
+      - We can add dots to signify non-random parameters:
+        - one dot for $\sigma_0^2$ with an edge going to $w$
+        - one dot for each $x_i$ with an edge going to $y_i$
+        - a dot for $\sigma^2$ with an edge to each $y_i$
+    - the joint distribution $p(w,y_i) = p(w)\prod_i p(y_i|w)$ respects this graph
+    - this graph is a bit confusing, so we use "plate notation"
+      - graph with $w$ going to a $y_i$ plate
+        - $y_i$ plate:
+          - has dot for $x_i$
+          - write $n$ on it so we know how many identical $i$ plates there are
+        - i.e. stack all the $i$ on top of each other
+    - can include another node for the $y$ to predict
+      - use shading to indicate the variables that we condition on e.g. the $y_i$
+    - $y_i$ are observed random variables
+    - $w$ is a latent/hidden variable
+
+## 13.7: Graphical model for Bayesian Naïve Bayes
+
+- Setup:
+  - $D = ((x^1,y^1),\dots,(x^n,y^n))$, $x^i\in\mathbb{R}^d$, $y^i\in\{1,\dots,m\}$
+  - $\pi\sim Dir(\alpha)$, $\alpha \in \mathbb{R}^m$, $\alpha_i > 0$
+  - $r_{jy}\sim Dir(\beta)$ for $j = 1,\dots,d$, $y\in\{1,\dots,m\}$
+    - $\beta = (\beta_i)$ for $\beta_i \in \mathbb{R}_+$
+  - $Y\sim \pi)$, $y^i \sim \pi$
+  - $X_j \sim r_{jy}$, $x^i_j \sim r_{jy}$ are independent given $y$
+- Graphical model which the Setup respects:
+  - dot for $\alpha$ going to a $\pi$ node
+  - edge from $\pi$ node to $y$ node
+  - $md$ nodes for the $r_{jy}$
+  - $d$ nodes for the $X_i$ (coordinates of $x$)
+  - edge from $y$ to the $x_i$ nodes
+    - Naïve Bayes assumption: no arrows between the $x_i$
+  - edges from the $r_{jy}$ nodes to the $x_i$ nodes.
+  - dot for $\beta$ that goes to all of the $r_{jy}$
+- Simplify with plate notation:
+  - Stack the $r_{jy}$ for each $j$
+  - Stack the data points $y^i$ along with the $x^i_j$
+    - one more copy of this for the prediction task of $y$ from $x$
+  - shade the $y_i$, $x^i_j$ data
+    - others are latent/hidden variables
+    - if predicting, also shade the new $x = (x_1,\dots,x_d)$
+
+## 13.8-13.9: Conditional independence in graphical models
+
+- Consider a graph with $C$ going to $A$ and $B$. If the joint distribution respects this graph, then we have
+  - $p(a,b,c) = p(a|c)p(b|c)p(c)$
+  - Now consider $p(a,b|c) = p(a,b,c)/p(c) = p(a|c)p(b|c)$, so that $A\perp B|C$
+    - Remark: this assumes that $p(c)>0$
+  - This is a "tail-tail" relationship between $A$ and $B$
+  - For example, suppose that a boiler causes a noise and alarm. The noise and alarm seem linked, but if we condition on the boiler state they are independent.
+- Consider a graph with $A$ going to $C$ going to $B$. Then we have
+  - $p(a,b,c) = p(a)p(c|a)p(b|c)$
+  - Let's condition on $c$, so that $p(a,b|c) = p(a,b,c)/p(c) = p(a|c)p(b|c)$
+    - we assume $p(c) > 0$
+    - p(a)p(c|a) = p(a,c) = p(c)p(a|c)$
+  - again, $A\perp B|C$
+  - This is a "head-tail" relationship
+  - e.g., a boiler causes steam which causes an alarm. The boiler and the alarm are not independent, but if we condition on the steam, they are independent.
+    - the boiler causes the alarm through the steam 
+- Consider a graph with $A$ and $B$ going to $C$:
+  - $p(a,b,c) = p(a)p(b)p(c|a,b)$
+  - $p(a,b|c) = p(a,b,c)/p(c) \neq p(a|c)p(b|c)$
+  - Example: 
+    - suppose that $A$ and $B$ are independent Bernoulli r.v. with $p=0.5$
+    - suppose that $C$ is 1 if $A=B$ and $0$ otherwise
+    - if we condition on $C$, then knowing $A$ causes us to know $B$, and vice versa
+      - $A$ and $B$ are not conditionally independent given $C$
+  - $p(a,b) = \sum_c p(a,b,c) = p(a)p(b)\sum p(c|a,b) = p(a)p(b)$
+  - in other words, we know that $A$ and $B$ are independent $A\perp B$
+    - just not necessarily conditionally independent given $C$
+  - This is a "head-head" relationship
+  - e.g. an alarm can go off based off of the boiler going on or of firealarm testing
+    - the two are independent, but if we know it's time for testing, than when the alarm goes off we can conclude that it's not the boiler.
+
+## 13.10-13.11: $d$-separation
+
+- Way to read off conditional independence properties from the graph
+- remember the tail-tail, head-tail, and head-head relationships from before
+- Terminology: The "descendents" of a graph vertex in a DAG are all the vertices that can be reached from this vertex by following arrows.
+- Definition: A path is a sequence of vertices where there are consecutive edges
+  - note that we don't have to follow the direction of the arrows
+- Let $G$ be a DAG and $A$, $B$, and $C$ be disjoint subsets of vertices (don't require that all vertices in the graph belong to one of them)
+  - Definition: A path between two vertices is "blocked" with respect to $C$ if it passes through a vertex $v$ such that either
+    - (a) $v\in C$ and the arrows in the path are head-tail or tail-tail at $v$
+    - (b) $v\notin C$ and none of the descendents of $v$ are in $C$ and the arrows in the path are head-head at $v$
+  - Definition: $A$ and $B$ are $d$-separated by $C$ if all paths from a vertex in $A$ to a vertex in $B$ are blocked with respsect to $C$
+  - Theorem ($d$-separation): If $A$ and $B$  are $d$-separated by $C$, then $A\perp B|C$
+    - Remark: the $d$ stands for "directed"?
+    - Remark: does not say if and only if
+    - Proof is a bit tricky.
+
+## 13.12-13.13: How to use $d$-separation - illustrative examples
