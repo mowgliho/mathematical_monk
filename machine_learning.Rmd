@@ -980,14 +980,14 @@ output:
   - Thus $\mathbb{E}\hat{s^2} = \frac{1}{n-1}\mathbb{E}\sum_i (X_i-X)^2 = \frac{n}{n-1}\mathbb{E}(X_i-X)^2 = \frac{n}{n-1}\frac{n-1}{n}\sigma^2 = \sigma^2$, and the unbiased estimator is unbiased.
   - Similarly, $\mathbb{E}\hat{\sigma^2} = \frac{n-1}{n}\sigma^2$, so underestimates
 
-# 11.2: Decision theory terminology in different contexts
+## 11.2: Decision theory terminology in different contexts
 
 - Contexts: General Setup, Estimators, and Regression/Classification
 - In the general setup, we have a state $s$ and data $D$. We take an action $a = \delta(D)$ and get a loss $L(s,a)$, where $\delta$ is a decision rule.
 - In the Estimator setup, we have a parameter $\theta$ and data $D$. We estimate $\hat{\theta} = g(D)$ and get a loss $L(\theta, \hat{\theta})$, where $g$ is an estimator function.
 - in Regression/Classification, we have a target value $y$ and a point $x$. We predict $\hat{y} = f(x)$ and get a loss $L(y,\hat{y})$, where $f$ is a predictor function.
 
-# 11.3: Frequentist risk, Bayesian expected loss, and Bayes risk
+## 11.3: Frequentist risk, Bayesian expected loss, and Bayes risk
 
 - Setup:
   - $D = (X_1,\dots, X_n)$, $D\sim p_\theta$
@@ -1004,7 +1004,7 @@ output:
 - Bayesian Perspective: We know the data $D$, so we now we minimize the risk of the action that we take - so it's silly to "average over $D$"
 - Frequentist Perspective: We don't know $\pi$, or in fact $\theta$ is a real/true thing - so doesn't have a distribution - so it's silly to "average over $\theta$"
 
-# 11.4: Choosing a decision rule - Bayesian and frequentist
+## 11.4: Choosing a decision rule - Bayesian and frequentist
 
 - How to choose a procedure $f$
 - Bayesian: Assume some prior $\pi$ on $\theta$
@@ -1014,7 +1014,7 @@ output:
   - Minimizing $R$ is not well defined, so we Introduce a further principle to guide your choice
     - For example: Unbiasedness, Admissibility, Minimax, Invariance, etc.
 
-# 11.5: Bias-Variance decomposition
+## 11.5: Bias-Variance decomposition
 
 - We'll show $MSE = bias^2 + variance$
 - Definition the Mean-Squared Error (MSE) of an estimator $\hat{\theta} = f(D)$ is $\mathbb{E}((\hat{\theta}-\theta)^2|\theta)$
@@ -1041,7 +1041,7 @@ output:
   - shrinkage
   - Stein's paradox
 
-# 11.6: Inadmissibility
+## 11.6: Inadmissibility
 
 - Inadmissibility is a way to reject certain estimators
 - $R(\theta, \delta) = \mathbb{E}(L(\theta, \delta(D))|\theta)$
@@ -1056,7 +1056,7 @@ output:
 - Definition: A decision rule that is not inadmissible then it is "admissible", i.e. there is no decision rule that dominates it.
 - Fact: Both $\delta_1$ and $\delta_0$ from above are admissible
 
-# 11.7: A fun exercise on inadmissibility
+## 11.7: A fun exercise on inadmissibility
 
 - Let $X_1,\dots,X_n \sim N(\mu,\sigma^2)$ assume $\mu$ is known, estimate $\sigma^2$
 - Use the square loss $L(\sigma_1^2,\sigma_2^2) = (\sigma_1^2-\sigma_2^2)^2$
@@ -1068,7 +1068,7 @@ output:
   - is there a "best" $s_c^2$ for some $c\geq 0$?
 - note that the results hinge on the fact that we're using the square loss.
 
-# 11.8: Bayesian decision theory
+## 11.8: Bayesian decision theory
 
 - Previous stuff was from a frequentist perspective (expectation of data given parameter)
 - Now we do a Bayesian perspective: given a decision rule $\delta$ on $D$
@@ -1366,7 +1366,7 @@ output:
   - $p(a,b,c) = p(a)p(c|a)p(b|c)$
   - Let's condition on $c$, so that $p(a,b|c) = p(a,b,c)/p(c) = p(a|c)p(b|c)$
     - we assume $p(c) > 0$
-    - p(a)p(c|a) = p(a,c) = p(c)p(a|c)$
+    - $p(a)p(c|a) = p(a,c) = p(c)p(a|c)$
   - again, $A\perp B|C$
   - This is a "head-tail" relationship
   - e.g., a boiler causes steam which causes an alarm. The boiler and the alarm are not independent, but if we condition on the steam, they are independent.
@@ -1395,8 +1395,8 @@ output:
   - note that we don't have to follow the direction of the arrows
 - Let $G$ be a DAG and $A$, $B$, and $C$ be disjoint subsets of vertices (don't require that all vertices in the graph belong to one of them)
   - Definition: A path between two vertices is "blocked" with respect to $C$ if it passes through a vertex $v$ such that either
-    - (a) $v\in C$ and the arrows in the path are head-tail or tail-tail at $v$
-    - (b) $v\notin C$ and none of the descendents of $v$ are in $C$ and the arrows in the path are head-head at $v$
+    - I: $v\in C$ and the arrows in the path are head-tail or tail-tail at $v$
+    - II: $v\notin C$ and none of the descendents of $v$ are in $C$ and the arrows in the path are head-head at $v$
   - Definition: $A$ and $B$ are $d$-separated by $C$ if all paths from a vertex in $A$ to a vertex in $B$ are blocked with respsect to $C$
   - Theorem ($d$-separation): If $A$ and $B$  are $d$-separated by $C$, then $A\perp B|C$
     - Remark: the $d$ stands for "directed"?
@@ -1404,3 +1404,78 @@ output:
     - Proof is a bit tricky.
 
 ## 13.12-13.13: How to use $d$-separation - illustrative examples
+
+- Graph with 8 nodes
+  - Setup Directed Edges:
+    - 1 and 2 go to 3
+    - 3 goes to 4 and 8
+    - 4 and 5 go to 6
+    - 6 goes to 7
+  - $d$-separation conditioning on $C = \{3\}$, consider pairs:
+    - 1 and 4 are $d$-separated, 1 and 2 are not, 4 and 5 are, 4 and 7 are, etc
+    - can annotate graph with "stop signs" at vertices to improve readability
+      - consider vertices in $C$, look for head-tail or tail-tail arrows
+      - consider head-head vertices that are not in $C$
+      - marks where paths can't go through
+  - $d$-separation conditioning on $C = \{7\}$
+    - no "stop signs"
+    - Nothing is conditionally independent given 7
+  - same graph as before, but add an edge from 1 to 5, condition on $C = \{3\}$ again
+    - same stop signs as before
+    - for some pairs $i,j$, now we might have 2 paths instead
+      - less pairs are blocked, as can go around stop signs (e.g. 2/5 and 2/7)
+
+# 14: Markov Models
+
+## 14.1: Markov models - motivating examples
+
+- Markov Models
+  - the future is independent of the past given the present
+  - temporal data, e.g. weather, finance, language, music, etc.
+- Motivating Examples
+  - Speech Recognition software: Dragon NaturallySpeaking
+  - Artificial Musical Compositions
+  - Language: Mark V Shaney
+  - Temporal data
+    - CO2 vs years
+    - Lat/Lon for robot location
+    - Fill in the blank/language model: What is the word at the end of this ...
+- Sequential Data: $D = (x_1,\dots,x_n)$
+  - modeled by RV $X_1,\dots,X_n$
+    - simplest model is iid, but this doesn't capture time dependencies
+    - think of weather - a good prediction for tomorrow is today's weather
+      - have $X_t$ depend on the most recent points $X_{t-1},\dots,X_{t-m}$ for some fixed $m$
+      - Simplest case: $m=1$
+
+## 14.2-14.3: Markov chains (discrete-time)
+
+- Discrete time Markov Chain
+  - Assumptions
+    - Markov assumption $X_t$ only depends on $X_{t-1}$
+    - Discrete time and discrete space: $t$ and $x$ occur discretely (not continuous)
+  - Definition: Discrete random variables $X_1,\dots,X_n$ form a (discrete-time) Markov Chain if the joint distribution respects the Graphical Model $X_1\rightarrow X_2\rightarrow\dots\rightarrow X_n$
+    - i.e. $p(x_t|x_1,\dots,x_{t-1}) = p(x_t|x_{t-1})$
+- Second order Markov Chain
+  - $m=2$
+  - $X_t$ only depends on $X_{t-1}$ and $X_{t-2}$
+  - i.e. the graph has arrows from $X_{i-1}$ to $X_i$ and $X_[i-2}$ to $X_i$
+- $n$-th order Markov Chain: arrows from $X_{i-j}$ to $X_i$ for $j = 1,\dots,n$
+- Continuous-time MC
+  - Brownian Motion: Used for stock prices
+  - Poisson Process
+- Concrete examples of Discrete-Time Discrete-Space first order MC
+  - Random walk on the integers: go up/down with $p=1/2$
+  - States: Sunny, Rainy, Snow, Cloudy
+    - model transition between the states
+      - if today is sunny, there are probabilities to each of the other states
+- But
+  - often, can't observe the true state of the system
+    - e.g. 
+      - model a robot's lan/lon, but there is some noise in transmission of the true state
+      - CO2 measurements could be noisy
+  - e.g. there is some hidden information that we're not seeing
+    - model with hidden/latent variables - HMM
+
+## 14.4-14.5: Hidden Markov Models (HMMs)
+
+
