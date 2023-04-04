@@ -1458,7 +1458,7 @@ output:
 - Second order Markov Chain
   - $m=2$
   - $X_t$ only depends on $X_{t-1}$ and $X_{t-2}$
-  - i.e. the graph has arrows from $X_{i-1}$ to $X_i$ and $X_[i-2}$ to $X_i$
+  - i.e. the graph has arrows from $X_{i-1}$ to $X_i$ and $X_{i-2}$ to $X_i$
 - $n$-th order Markov Chain: arrows from $X_{i-j}$ to $X_i$ for $j = 1,\dots,n$
 - Continuous-time MC
   - Brownian Motion: Used for stock prices
@@ -1478,4 +1478,90 @@ output:
 
 ## 14.4-14.5: Hidden Markov Models (HMMs)
 
+- widely used for sequential data
+- simple enough to estimate the parameters and do inference
+- rich enough to handle real world applications
+- Setup
+  - Random variables
+    - Hidden/Latent variables: $z_1,\dots,z_n\in \{1,\dots,m\}$
+    - Observed Random Variables: $x_1,\dots,x_n\in \mathcal{X}$, e.g. discrete, $\mathbb{R}$, $\mathbb{R}^d$
+  - Random variables respect the "trellis diagram" graph:
+    - arrows from $z_i$ to $x_i$
+    - arrows from $z_i$ to $z_{i+1}$
+  - can think of time as $i$
+- As we respect the graph, $p(x_1\dots,x_n,z_1,\dots,z_n) = p(z_1)p(x_1|z_1)\prod_{k=2}^n p(z_k|z_{k-1})p(x_k|z_k)$
+- Parameters
+  - Transition probabilities from $i$ to $j$: $T(i,j) = p(z_{k+1} = j|z_k = i)$
+    - can view as $m\times m$
+  - Emission probabilities $\epsilon_i(x) = p(x_k|z_k = i)$ for $i\in \{1,\dots,m\}$, $x\in\mathcal{X}$
+  - Initial distribution $\pi(i) = p(z_1 = i)$, $i \in \{1,\dots,m\}$
+- The joint distribution then becomes $p(x_1,\dots,x_n,z_1,\dots,z_n) = \pi(i)\epsilon_{z_1}(x_1)\prod_{k=2}^n T(z_{k-1},z_k)\epsilon_{z_k}(x_k)$
+- Remark: $\epsilon_i$ can be pretty arbitrary: 
+  - $x_i$ can be discrete (e.g. poisson etc), real valued (e.g. Gaussian), etc.
+  - depends on the observed output and how we want to model it
+- Example
+  - $z_k\in \{-1,1\}$
+  - $x_k\in \mathbb{R}$
+  - $T(i,j) \approx 1$ if $i = j$ (i.e. tends to stick at $1$ or $-1$ and occasionally flip)
+  - $\epsilon_i(x)$ are Gaussian distributions centered around $i$ ($i\in \{-1,1\}$)
 
+## 14.6-14.9: Forward-Backward algorithm for HMMs
+
+- Perfect example of Dynamic Programming
+  - Invented by Richard Bellman
+  - problem is broken down into subproblems, solve subproblems, save results and optimize
+  - i.e. reuse earlier results/computations
+  - usually to find max/min range of query
+- Forward-Backward
+  - assume $p(x_k|z_k)$, $p(z_k|z_{k-1})$, $p(z_1)$ are known
+  - algorithm lets us compute $p(z_k|x)$
+    - i.e. the probability distribution of one of the hidden nodes given the observed output
+  - Notation:
+    - $x_{i:j} = (x_i,x_{i+1},\dots,x_{j-1})$
+    - $x = (x_1,\dots,x_n) = x_{1:n}$
+  - Parts
+    - Forward Algorithm: Compute $p(z_k,x_{1:k})$ for all $k=1,\dots,n$
+    - Backward Algorithm: Compute $p(x_{k+1:n}|z_k)$ for all $k=1,\dots,n$
+  - Then $p(z_k|x)\propto p(z_k,x) = p(x_{k+1:n}|z_k,x_{1:k})p(z_k,x_{1:k})$
+    - looking at the trellis diagram, we see that $x_{1:k}$ is conditionally independent of $x_{k+1:n}$ given $z_k$
+      - by $d$-separation
+      - also known as the Markov Assumption
+      - thus $p(x_{k+1:n}|z_k,x_{1:k}) = p(x_{k+1:n}|z_k)$
+    - Then the product is the backward part times the forward part.
+- Then can do
+  - Inference: e.g. $p(z_k\neq z_{k+1}|x)$ or other things
+  - Estimate parameters: optimize initial, transition, and emission parameters via the Baum-Welch algorithm
+    - Expectation Maximization with Forward/Backward Algorithm
+  - Sample from the posterior
+    - get most likely $z$: Viterbi Algorithm
+    - sample: follow distribution
+- Forward Algorithm:
+  - Goal: Compute $p(z_k,x_{1:k})$
+  - $p(z_k,x_{1:k}) = \sum_{z_{k-1}}^m p(z_k,z_{k-1},x_{1:k}) = \sum_{z_{k-1}} p(x_k|z_k,z_{k-1},x_{1:k-1})p(z_k|z_{k-1},x_{1:k-1})p(z_{k-1}|z_{k-1},x_{1:k-1})$
+    - the $p(z_{k-1},x_{1:k-1})$ gives us some handy recursion
+    - By Markovness/$d$-separation
+      - $p(x_k|z_k,z_{k-1},x_{1:k-1}) = p(x_k|z_k)$, i.e. the emission probability
+      - $p(z_k|z_{k-1},x_{1:k-1}) = p(z_k|z_{k-1})$, i.e. the transition probability
+    - Thus $p(z_k,x_{1:k}) = \sum_{z_{k-1}}p(x_k|z_k)p(z_k|z_{k-1})p(z_{k-1},x_{1:k-1})$
+    - Denote $\alpha_k(z_k) := p(z_k,x_{1:k})$
+      - for $k\geq 2$, $\alpha_{k}(z_k) = \sum_{z_{k-1}}p(x_k|z_k)p(z_k|z_{k-1})\alpha_{k-1}(z_{k-1})$
+      - for $k=1$, $\alpha_1(z_1) = p(z_1,x_1) = p(z_1)p(x_1|z_1)$
+        - i.e. product of initial and emission probabilities
+    - Starting with $\alpha_1$, we can use the recursion to compute $\alpha_i$ up to $i=n$
+      - computing all of them is on the order of $nm^2$
+        - $O(f(n))$ means that $\exists c, N$ such that the $\forall n > N$ $time_n \leq cf(n)$.
+          - i.e. the time is bounded by $cf(n)$ after $N$
+        - $\Theta(f(n))$ means that $\exists c, c' > 0, N$ s.t. $\forall n > N$, $c'f(n)\leq time_n\leq cf(n)$
+          - i.e. it grows roughly proportionally to $f(n)$
+  - consider the naïve approach 
+    - $p(z_k|x) = p(z_k,x)/p(x)$
+      - $p(z_k,x) = \sum_{z_i, i\neq k} p(x,z)$
+        - so have to calculate $p(x,z)$ $m^n$ times - i.e. all possible sequences of $z$
+    - Dynamic programming is much better
+      - reuse old computation
+      - in particular, we reuse the $\alpha_i(z_i)$, i.e. the subproblem for shorter sequences
+- Common problems with Markov Chains 
+  - Hitting times, expected number of visits to a particular state, etc.
+  - for many of these problems, we can set up a recursion
+    - can sometimes then solve analytically
+    - or can use Dynamic Programming
