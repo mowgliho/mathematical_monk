@@ -1492,7 +1492,7 @@ output:
 - As we respect the graph, $p(x_1\dots,x_n,z_1,\dots,z_n) = p(z_1)p(x_1|z_1)\prod_{k=2}^n p(z_k|z_{k-1})p(x_k|z_k)$
 - Parameters
   - Transition probabilities from $i$ to $j$: $T(i,j) = p(z_{k+1} = j|z_k = i)$
-    - can view as $m\times m$
+    - can view as $m\times m$ matrix
   - Emission probabilities $\epsilon_i(x) = p(x_k|z_k = i)$ for $i\in \{1,\dots,m\}$, $x\in\mathcal{X}$
   - Initial distribution $\pi(i) = p(z_1 = i)$, $i \in \{1,\dots,m\}$
 - The joint distribution then becomes $p(x_1,\dots,x_n,z_1,\dots,z_n) = \pi(i)\epsilon_{z_1}(x_1)\prod_{k=2}^n T(z_{k-1},z_k)\epsilon_{z_k}(x_k)$
@@ -1545,18 +1545,17 @@ output:
     - Thus $p(z_k,x_{1:k}) = \sum_{z_{k-1}}p(x_k|z_k)p(z_k|z_{k-1})p(z_{k-1},x_{1:k-1})$
     - Denote $\alpha_k(z_k) := p(z_k,x_{1:k})$
       - for $k\geq 2$, $\alpha_{k}(z_k) = \sum_{z_{k-1}}p(x_k|z_k)p(z_k|z_{k-1})\alpha_{k-1}(z_{k-1})$
-      - for $k=1$, $\alpha_1(z_1) = p(z_1,x_1) = p(z_1)p(x_1|z_1)$
-        - i.e. product of initial and emission probabilities
+      - for $k=1$, $\alpha_1(z_1) = p(z_1,x_1) = p(z_1)p(x_1|z_1)$, i.e. product of initial and emission probabilities
     - Starting with $\alpha_1$, we can use the recursion to compute $\alpha_i$ up to $i=n$
       - computing all of them is on the order of $nm^2$
-        - $O(f(n))$ means that $\exists c, N$ such that the $\forall n > N$ $time_n \leq cf(n)$.
+        - $O(f(n))$ means that $\exists c, N$ such that the $\forall n > N$, $time_n \leq cf(n)$.
           - i.e. the time is bounded by $cf(n)$ after $N$
         - $\Theta(f(n))$ means that $\exists c, c' > 0, N$ s.t. $\forall n > N$, $c'f(n)\leq time_n\leq cf(n)$
           - i.e. it grows roughly proportionally to $f(n)$
   - consider the naïve approach 
     - $p(z_k|x) = p(z_k,x)/p(x)$
       - $p(z_k,x) = \sum_{z_i, i\neq k} p(x,z)$
-        - so have to calculate $p(x,z)$ $m^n$ times - i.e. all possible sequences of $z$
+        - so have to calculate $p(x,z)$ approximately $m^n$ times - i.e. all possible sequences of $z$
     - Dynamic programming is much better
       - reuse old computation
       - in particular, we reuse the $\alpha_i(z_i)$, i.e. the subproblem for shorter sequences
@@ -1579,3 +1578,36 @@ output:
         - for $k = n-1$, $\beta_n(z_n) = p(x_n|z_{n-1}) = \sum_{z_n} p(x_n|z_n)p(z_n|z_{n-1})$
           - Thus by analogy, $\beta_n(z_n)$ should be $1$ for all $z_n$
   - Thus calculate backwards from $n$ to $k$, same order of complexity as the forward algorihtm, etc.
+
+## 14.10: Underflow and the log-sum-exp trick
+
+- In practice, we will often run into underflow as probabilities get really small.
+- log-sum-exp trick in HMMs
+  - $\alpha_k(z_k) = p(z_k,x_{1:k}) = \sum_{z_{k-1}}p(x_k|z_k)p(z_k|z_{k-1})\alpha_{k-1}(z_{k-1})$
+    - $\log \alpha_k(z_k) = \log\big(\sum_{z_{k-1}}\exp\big[\log p(x_k|z_k) + \log p(z_k|z_{k-1}) + \log\alpha_{k-1}(z_{k-1})\big]\big)$
+      - this is not any better
+      - let $a_i = \log p(x_k|z_k) + \log p(z_k|z_{k-1}) + \log\alpha_{k-1}(z_{k-1})$
+        - typically, the $a_i$ are large negative numbers
+      - then we want to compute $\log \sum_i e^{a_i}$
+        - this is approximately $\max a_i$, so only the largest $a_i$ counts
+        - so we consider $\log(e^b\sum_i(e^{a_i-b}))$, where $b = \max_i a_i$
+        - this becomes $b + \log \sum_i e^{a_i-b}$
+          - this doesn't have the underflow issue, as we essentially work in logs
+
+## 14.11-14.12: Viterbi Algorithm
+
+- find the most probable $z$ given $x$ and the initial/emission/transition probabilities
+- Goal: Compute $\arg\max p(z|x)$
+- Remark: If $f(a)\geq 0$ for all $a$ and $g(a,b)\geq 0$ for all $a,b$, then $\max_{a,b}f(a)g(a,b) = \max_a(f(a)\max_b(g(a,b)))$
+- Note: $\arg\max_z p(z|x) = \arg\max_z p(z,x)$
+- Viterbi Algorithm
+  - Define $\mu_k(z_k) = \max_{z_{1:k-1}} p(z_{1:k},x_{1:k}) = \max_{z_{1:k-1}} p(x_k|z_k)p(z_k|z_{k-1})p(z_{1:k-1},x_{1:k-1})$
+    - $\mu_k(z_k)$ defines the maximum probability for $z_{1:k}$, $x_{1:k}$, where $z_{1:k}$ ends in $z_k$ and we're getting the maximum over possible sequence $z_{1:k-1}$
+    - use the remark, note that $p(x_k|z_k)$ and $p(z_k|z_{k-1})$ are independent of $z_{1:k-2}$, and obtain
+      - $\mu_k(z_k) = \max_{z_{k-1}}p(x_k|z_k)p(z_k|z_{k-1})\mu_{k-1}(z_{k-1})$
+  - Thus we have a nice recursion which holds for $k > 1$
+  - consider $k=1$, i.e. $\mu_1(z_1) = p(z_1,x_1) = p(z_1)p(x_1|z_1)$
+  - now we can calculate all the $\mu_k(z_k)$ iteratively
+    - get $\mu_n(z_n)$.
+    - $\max_{z_n}\mu_n(z_n) = \max_{z_{1:k}}p(x_{1:n},z_{1:n})$, i.e. our goal!
+- to get the maximum sequence, we keep track of the $z_{1:k}$ sequence at each $\mu_{k}(z_k)$ that gives us the maximum
