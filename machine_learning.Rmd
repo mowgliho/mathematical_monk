@@ -1565,3 +1565,17 @@ output:
   - for many of these problems, we can set up a recursion
     - can sometimes then solve analytically
     - or can use Dynamic Programming
+- Backard Algorithm
+  - Goal: Compute $p(x_{k+1:n}|z_k)$ for all $k\in\{1,\dots,n-1\}$, $z_k\in\{1,\dots,m\}$
+  - Let's set up a recursion like in the Forward Algorithm
+  - $p(x_{k+1:n}|z_k) = \sum_{z_{k+1}=1}^m p(x_{k+1:n},z_{k+1}|z_k) = \sum_{z_{k+1}} p(x_{k+2:n}|z_{k+1},z_k, x_{k+1})p(x_{k+1}|z_{k+1},z_k)p(z_{k+1}|z_k)$
+  - By $d$-separation/Markov
+    - $p(x_{k+2:n}|z_{k+1},z_k,x_{k+1}) = p(x_{k+2:n}|z_{k+1})$
+    - $p(x_{k+1}|z_{k+1},z_k) = p(x_{k+1}|z_{k+1})$
+  - thus this becomes $\sum_{z_{k+1}} p(x_{k+2:n}|z_{k+1}) p(x_{k+1}|z_{k+1})p(z_{k+1}|z_k)$
+    - Let $\beta_k(z_k):= p(x_{k+1:n}|z_k)$
+      - this becomes $\beta_k(z_k) = \sum_{z_{k+1}} \beta_{k+1}(z_{k+1}) p(x_{k+1}|z_{k+1})p(z_{k+1}|z_k)$
+      - valid for $k = 1,\dots,n-1$
+        - for $k = n-1$, $\beta_n(z_n) = p(x_n|z_{n-1}) = \sum_{z_n} p(x_n|z_n)p(z_n|z_{n-1})$
+          - Thus by analogy, $\beta_n(z_n)$ should be $1$ for all $z_n$
+  - Thus calculate backwards from $n$ to $k$, same order of complexity as the forward algorihtm, etc.
