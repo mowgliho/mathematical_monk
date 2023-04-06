@@ -1611,3 +1611,49 @@ output:
     - get $\mu_n(z_n)$.
     - $\max_{z_n}\mu_n(z_n) = \max_{z_{1:k}}p(x_{1:n},z_{1:n})$, i.e. our goal!
 - to get the maximum sequence, we keep track of the $z_{1:k}$ sequence at each $\mu_{k}(z_k)$ that gives us the maximum
+
+# 15: Newton's method for optimization and Logistic Regression
+
+## 15.1-15.2: Newton's method (for optimization)
+
+- Newton's Method: General Thoughts
+  - Method for finding the zeros of a function
+  - When applied to optimization, can find the maxima/minima of a function
+  - Second order method (uses second derivative)
+    - For example, Gradient Descent is a First order method
+- Intuition
+  - Zero-finding: $x_{t+1} = x_t - f(x_t)/f'(x_t)$, iterate and get zero
+  - Minimizing/Maximizing
+    - Usually, set derivative equal to zero
+    - if can't solve analytically, can use Newton's Method $x_{t+1} = x_t - f'(x_t)/f''(x_t)$
+      - i.e. find zero point of derivative
+      - can also view as approximating the function with a quadratic at $x_t$ and setting $x_{t+1}$ to the minimum/maximum $x$ of this quadratic.
+    - 2D: Can view as moving to minimum of paraboloid that approximates $f$ at $x_t$
+- Derivation
+  - Let $f:\mathbb{R}^n \rightarrow \mathbb{R}$ be "sufficiently smooth"
+  - Taylor's theorem: given $a$, $f$ can be approximated by $f(x)\approx q(a) := f(a) + g^T(x-a) + 1/2 (x-a)^TH(x-a)$
+    - Notes:
+      - $x$ is close to $a$
+      - $g = \nabla f(a)$
+      - $H = \nabla^2 f(a)$
+    - Expanding, get $\frac{1}{2}x^THx + b^Tx + c$ where
+      - $b = g-Ha$
+      - $c = f(a) + \dots$
+    - Then $\nabla q = Hx + b$
+      - This being 0 implies $x = - H^{-1}b = a - H^{-1}g$, assuming that $H$ is invertible
+      - Let's check that this is a minimum
+        - take another derivative, $\nabla^2 q = H$
+          - i.e. the Hessian of $q$ is the Hessian of $f$
+          - If $f$ is convex at $a$, then $q$ is convex at $a$
+  - Algorithm:
+    - initialize $x_0\in \mathbb{R}^n$
+    - iterate $x_{t+1} = x_t - H^{-1}g$
+      - $g = \nabla f(x_t)$
+      - $H = \nabla^2f(x_t)$
+- Possible issues:
+  - $H$ may fail to be positive definite: Can switch to gradient descent (Levenburg-Marquandt)
+  - Instead of inverting $H$ directly, can solve $Hy = g$ for $y$ and define $x_{t+1} = x_t - y$
+    - can be computationally more efficient
+  - Could do $x_{t+1} = x_t - \alpha_ty$, with $\alpha_t > 0$
+    - I.e. a learning rate/step size
+
