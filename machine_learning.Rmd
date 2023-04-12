@@ -1657,3 +1657,80 @@ output:
   - Could do $x_{t+1} = x_t - \alpha_ty$, with $\alpha_t > 0$
     - I.e. a learning rate/step size
 
+## 15.3-15.4: Logistic Regression (Binary) Introduction:
+
+- General
+  - Does classification
+  - Widely used model
+  - can give pretty good performance
+  - builds the foundation for neural networks, generalized linear models
+  - Can do multiclass, but we'll only talk about binary logistic regression here
+- Example: Suppose you are are an actuary
+  - Want to model the $p(death| x)$, where $x_1$ is age, $x_2$ is M/F, $x_3$ is cholesterol
+  - simplest model $w_0 + \sum_i w_ix_i = w^tx$ where $x = (1,x_1,x_2,x_3)$
+    - But this is not a probability
+    - To get a probability, send through a sigmoid: $p(death|x) = \sigma(w^Tx)$
+      - $\sigma(a) = e^a/(e^a + 1)$
+- Formalization
+  - Classification algorithm
+  - Given: $D = \{(x_1,y_1),\dots,(x_n,y_n)\}$, $x_i \in \mathbb{R}^d$, $y_i\in \{0,1\}$
+  - Model: $Y_i\sim Bernoulli(\sigma(w^Tx_i))$
+    - independent
+    - $\sigma(a) = e^a/(1+e^a)$
+    - $w$ is a parameter
+    - Discriminative model: No Probability distribution on $x$
+- Pros
+  - Interpretable: if $w_i$ is positive, then the probability increases as $x_i$ grows (and vice-versa)
+  - Small number of parameters, $d+1$, i.e. statistically efficient
+  - Computationally efficient to estimate $w$ (Newton's method to maximize likelihood)
+  - Natural extension to multiclass
+  - Foundational method for neural networks, generalized linear models
+- Cons
+  - Performance can be weaker (e.g. than Random Forests, Boosted Trees, SVMs, etc.)
+
+## 15.5-15.7: Estimating parameters for Binary Logistic Regression
+
+- Maximum likelihood estimation: $w_{MLE} = \arg\max_w p(D|w)$
+  - $p(D|w) = \prod_i p(y_i|x_i,w) = \prod_i \alpha_i^{y_i}(1-\alpha_i)^{1-y_i}$, where $\alpha_i = \sigma(w^Tx_i)$
+  - we can't solve analytically for $w$ because of the nonlinearity in $\sigma$
+  - Let's work with logs
+    - Minimize: $\mathcal{L}(w) = -\log p(D|w) = -\sum_i y_i\log \alpha_i + (1-y_i)\log(1-\alpha_i)$
+- Gradient, i.e. take a derivative wrt $w_j$
+  - let $\alpha = \sigma(w^Tx)$
+  - $\frac{d}{dw_j}\log\alpha = \frac{x_je^{-w^Tx}}{1 + e^{-w^Tx}} = \frac{x_j}{e^{w^Tx} + 1} = x_j(1-\alpha)$, note: $\log \alpha = \log\sigma(w^Tx) = \log\frac{1}{1 + e^{-w^Tx}} = -\log(1+e^{-w^Tx})$
+  - $\frac{d}{dw_j} \log(1-\alpha) = -x_j + x_j(1-\alpha) = -\alpha x_j$, note: $\log(1-\alpha) = -w^Tx - \log(1 + e^{-w^Tx})$
+  - Thus, the derivative of $\mathcal{L}$:
+    - Given a data point $x_i$, we denote $x_{ij}$ to be the $j$-th dimension of $x_i$, i.e. $x_i = (x_{i1},\dots x_{id})$
+    - $\frac{d}{dw_j}\mathcal{L} = -\sum_i y_ix_{ij}(1-\alpha_i) - (1-y_i)\alpha_ix_{ij} =\sum_i (\alpha_i-y_i)x_{ij}$
+      - remember, $y_i$ is in $\{0,1\}$, $\alpha_i$ is the probability from the distribution
+    - Let $A$ be the design matrix, where $A_{ij} = x_{ij}$
+      - the derivative of the negative log likelihood simplifies to $A^T(\alpha-y)$
+    - (Note that if we set this to zero the $\alpha$ will expand and this becomes very messy)
+- Hessian: Take one more derivative
+  - $\frac{d^2}{dw_jdw_k}\mathcal{L} = \sum_i x_{ij}\frac{d}{dw_k}\alpha_i$
+    - From before, we know the derivative of $\log\alpha$
+      - Thus $d\alpha = \alpha d\log\alpha = \alpha x_j(1-\alpha)$
+      - i.e. $\frac{d}{w_k}\alpha_i = x_{ik}\alpha_i(1-\alpha_i)$
+    - So we obtain $\sum_i x_{ij}x_{ik}\alpha_i(1-\alpha_i) = z_j^TBz_k$, where
+      - $z_j = x_{1j},\dots,x_{nj}$
+      - $B$ is a diagonal $n\times n$ matrix with diagonal elements $\alpha_i(1-\alpha_i)$
+        - Note that the $\alpha$ are outputs of $\sigma$, so that the diagonal elements are positive, real valued
+          - We can define $B^{1/2}$ with elements the square roots of those of $B$
+    - So the entire Hessian Matrix (all $ij$ in a matrix form) is $H = A^TBA$
+      - This is $(B^{1/2}A)^T(B^{1/2}A)$, which is positive semi-definite: Thus $\mathcal{L}$ is convex and we can apply Newton's Method
+- Applying Newton's Method
+  - In this case, known as "iteratively reweighted least squares"
+  - Update rule: $w_{t+1} = w_t - H^{-1}g$
+    - analogy to 1D case: $x_{t+1} = x_t - f'(x_t)/f''(x_t)$
+    - $w_{t+1} = w_t - H^{-1}g = w_t - (A^TBA)^{-1}A^T(\alpha-y)$
+      - assume that $H$ is invertible
+    - rewrite as a weighted least squares algorithm
+      - $(A^TBA)^{-1}A^TB(Aw_t - B^{-1}(\alpha - y)) = (A^TBA)^{-1}A^TBz_t$
+        - where $z_t = Aw_t-B^{-1}(\alpha - y)$
+      - in linear regression, the weights were solution was $(A^TA)^{-1}A^Ty$
+      - By analogy, this is linear regression where:
+        - minimize $\arg\min_w \sum_i b_i(z_i - w^Tx_i)^2$
+        - We weight by the elements of $B$; $i$-th element is weighted by $\alpha_i(1-\alpha_i)$
+  - Iterative weighted least squares:
+    - in each iteration, we look at $z_i - w^Tx_i$
+    - $B$ changes in each iteration
