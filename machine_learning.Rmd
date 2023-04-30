@@ -1734,3 +1734,186 @@ output:
   - Iterative weighted least squares:
     - in each iteration, we look at $z_i - w^Tx_i$
     - $B$ changes in each iteration
+
+# 16: Expectation Maximization
+
+## 16.1 - 16.2: $K$-means clustering
+
+- $K$-means clustering
+  - Given $D = (x_1,\dots,x_n)$ in $\mathbb{R}^d$
+  - Intuition: Points from a cluster are closer to the "center" of their cluster
+  - Assume that there are $K$ clusters with unknown "centers" $\mu_i$
+  - A measure $\mathcal{L}$ of how good proposed centers are is the sum of distances, i.e. $\sum_i ||x_i-\mu_j||^2$, where point $i$ is assigned to cluster $j$
+    - rewrite as $\mathcal{L} = \sum_{j=1}^K\sum_{i=1}^n a_{ij}||x_i-\mu_j||^2$, where $a_{ij}$ is 1 if $i$ is assigned to $j$ and 0 otherwise
+  - Algorithm
+    - initialize $\mu_i$ to some values
+    - Choose optimal assignments $a$ given centers $\mu_i$: i.e. assign $x_i$ to closest $\mu_j$
+    - Choose optimal $\mu$ for fixed $a$: i.e. set to the centroid/empirical mean of the assigned points
+      - take the gradient of $\mathcal{L}$ wrt $\mu_j$, set to 0, see that the Hessian is positive definite (if each cluster has at least one point)
+    - repeat until convergence
+  - not guaranteed to give the global minimum
+- $K$-means is a special case of Expectation Maximization
+
+## 16.3-16.5: Expectation Maximization (EM) Algorightm
+
+- Class of Algorithms/approach to approximately obtain MLE or MAP estimates of parameters when some data is missing
+  - For example, HMM: hidden states are not observed, Gaussian Mixture Models, etc.
+  - Useful when we have unobserved latent variables
+- Setup
+  - Given: $x = (x_1,\dots,x_n)$
+  - Model: $X,Z\sim p_\theta$ for some unknown parameter $\theta\in\Theta$
+    - works best when $p_\theta$ is an exponential family
+  - Goal: find $\theta_{MLE}\in\arg\max_\theta p_\theta(x)$
+  - Don't get to see the hidden variables $Z$, so the marginal distribution $p_\theta(x) = \sum_z p_\theta(x,z)$ is difficult to maximize
+- EM Algorithm:
+  - Iteratively improve estimate of $\theta$
+    - initialize $\theta_0\in\Theta$
+    - for $t = 0,1,\dots$ until convergence or max number of iterations
+      - $E$-step: $Q(\theta,\theta_t) = \mathbb{E}_{\theta_t}(\log p_\theta (X,Z)|X=x)$
+        - ideally as an expression of $\theta$
+      - $M$-step: Choose $\theta_{t+1}$ to maximize $Q(\theta,\theta_t)$
+- Pros:
+  - Guaranteed that $p_{\theta_{t+1}}(x) \geq p_{\theta_t}(x)$
+  - Works well in practice
+- Cons:
+  - Not guaranteed to give $\theta_{MLE}$: can get stuck at a local optimum
+  - MLE can overfit
+    - but we can also use EM to get the MAP
+  - Convergence can be slow
+  - Specialized to Exponential Families
+    - if not exponential, one of the $E$ or $M$ steps can be difficult to solve analytically
+- Motivation for the EM algorithm
+  - Consider the MLE case
+  - Goal: find $\arg\max_\theta p_\theta(x)$
+  - Specialize to an expnential family: $p_\theta(x,z) = e^{g(\theta)^Ts(x,z)}h(x,z)/c(\theta)$
+  - For exponential families, MLE is invariant under reparameterization, so we assume $g(\theta)=\theta$
+    - We assume we have "natural form" $p_\theta(x,z) = e^{\theta^Ts(x,z)}h(x,z)/c(\theta)$
+  - Differentiate and set to zero: can maximize log instead
+    - $0 = \frac{d}{d\theta_i} \log p_\theta(x) = \frac{1}{p_\theta(x)}\sum_z\frac{d}{d\theta_i}p_\theta(x,z)$
+      - $\frac{d}{d\theta_i}p_\theta(x,z) = (s_i(x,z) - \frac{d}{d\theta_i}\log c(\theta))p_\theta(x,z)$
+      - $\frac{d}{d\theta_i}\log c(\theta) = \mathbb{E}_\theta (s_i(X,Z))$
+        - the sufficient statistic
+    - $0 = \frac{1}{p_\theta(x)}\sum_z (s_i(x,z) - \mathbb{E}_\theta s_i(X,Z))p_\theta(x,z) = \sum_z s_i(x,z)p_\theta(z|x)-\mathbb{E}_\theta s_i(X,Z)$
+      - note that $s_i(X,Z)$ doesn't depend on $z$
+    - First sum is $\mathbb{E}_\theta(s_i(X,Z)|X=x)$, so we obtain
+      - $\mathbb{E}_\theta s_i(X,Z) = \mathbb{E}_\theta(s_i(X,Z)|X=x)$
+      - often can't solve this analytically for $\theta$
+      - Iterate:
+        - Let $\theta_0\in\Theta$
+        - for $t = 1,2,\dots$
+          - Solve $\mathbb{E}_{\theta_{t-1}}(s_i(X,Z)|X=x) = \mathbb{E}_{\theta_t}s_i(X,Z)$ for $\theta_t$
+  - Standard EM: $Q(\theta,\theta_t) = \mathbb{E}_{\theta_t}(\log p_\theta (X,Z)|X=x)$
+    - $p_\theta(x,z) = e^{\theta^Ts(x,z)-\log c(\theta)}h(x,z)$
+    - $\log p_\theta(x,z) = \theta^Ts(x,z) - \log c(\theta) + \log h(x,z)$
+    - $Q(\theta,\theta_t) = \mathbb{E}(\log p_\theta(X,Z)|X=x) = \theta^T\mathbb{E}(s(X,Z)|X=x)-\log c(\theta) + C$
+      - To maximize this, we different wrt $\theta_i$, set to zero
+        - $0 = \mathbb{E}(s_i(X,Z)|X=x) - \mathbb{E}s_i(X,Z)$
+        - i.e. we get the same condition as before
+
+## 16.6: Gaussian mixture model: intro
+
+- mixture of Gaussian distributions
+  - pdf is a convex combination of Gaussians
+  - can extend to multiple dimensions of course
+- Generative model
+  - Setup
+    - $z \in \{e_1,\dots,e_m\}$
+      - $e_i$ form the standard basis for $\mathbb{R}^m$
+    - $p(z=e_k) = \alpha_k$
+  - Given $z = e_k$, $X \sim N(\mu_k, C_k)$
+    - $\mu_1,\dots,\mu_m\in \mathbb{R}^d$
+    - $C_1,\dots,c_m$ are $d\times d$ covariance matrices
+  - In other words, $z$ is a "latent variable"
+    - First draw $z$: i.e. a Gaussian
+    - Then draw a normally distributed $x$ from that Gaussian
+    - etc.
+  - instead of modeling the pdf, we model via: first pick which distribution, then pick a value of $x$ corresponding to that.
+    - $p(x) = \sum_z p(x|z)p(z) = \sum_k p(z = e_k)p(x|z = e_k) = \sum_k \alpha_k N(x|\mu_kC_k)$
+  - $\alpha_i$ are called the mixing coefficients
+- Joint distribution
+  - $p(x,z) = \prod_{k=1}^m \alpha_k^{z_k}N(x|\mu_k,C_k)^{z_k}$
+    - $z_i$ are indicator functions, ie which distribution we pick
+  - $p(z = e_k|x) = \frac{p(x|e_k)p(e_k)}{p(x)} = \frac{\alpha_k N(x|\mu_k,C_k)}{\sum_l \alpha_lN(x|\mu_l,C_l)} = \mathbb{E}(I(z=e_k)|X=x)$
+
+## 16.7-16.10: EM for the Gaussian mixture model
+
+
+- How to estimate the parameters for a GMM
+  - difficult, but pretty nice with EM
+- Parameters: $\theta = (\alpha, \{\mu_k\}, \{C_k\})$
+- EM: we'll use sufficient statistics for exponential families
+  - $\mathbb{E}_{\theta_{t-1}}(s_i(X,Z)|X=x) = \mathbb{E}_{\theta_t}s_i(X,Z)$
+  - $\mathbb{E}_{\theta_0}(s_i(X,Z)|X=x) = \mathbb{E}_{\theta}s_i(X,Z)$ to make it easier
+- Let's show that it's an exponential family
+  - $p(x,z) = \prod_k \alpha_k^{z_k}N(x|\mu_k, C_k)^{z_k} = \prod_k e^{z_k\log \alpha_k}\frac{1}{\sqrt{|2\pi C_k|}}\exp(-\frac{1}{2}(x-\mu_k)^TC^{-1}(x-\mu_k))$
+    - define $\lambda_k = C_k^{-1}$, collect exp, put into exp form, apply some properties of the trace
+    - sufficient statistics are $z$, $z_kxx^T$ for $k = 1,\dots,m$, $z_kx$ for $k = 1,\dots,m$
+  - now we extend do iid draws of $x$ and $z$, i.e. iid draws of $p(x,z)$ - for each sample
+    - $p(D) = \prod_i p_\theta(x_i,z_i)$
+      - $x_i = (x_{i1},\dots x_{ik})$, $z_i = (z_{i1},\dots,z_{im})$
+      - do more arithmetic, read off sufficient statistics, apply the EM algorithm for exponential families
+- then, given $\theta_0$, we can calculate $\mathbb{E}_{\theta_0}(\sum_i z_{ik}|X=x)$, and then can calculate $\theta_1$, etc.
+  - to calculate $\theta_i$, calculate $\mu$ and the covariance matrix
+  - (derivations in the videos gets a bit convoluted)
+  - after a bunch of arithmetic, we obtain update functions for $\theta_i$ from $\theta_{i-1}$
+
+## 16.11 - 16.12: The likelihood is nondecreasing under EM
+
+- We want the MLE: $\theta_{MLE} = \arg\max_\theta p_\theta(x)$
+  - turns out that EM is not guaranteed to give us this
+- But if our data is $x = (x_1,\dots,x_n)$, the sequence $\theta_1,\dots$ of EM estimates satisfies $p_{\theta_i}(x)\leq p_{\theta_{i+1}}(x)$
+- Proof:
+  - $\theta_{t+1} \in \arg\max_\theta Q(\theta, \theta_t)$ where
+    - $Q(\theta, \theta_0) = \mathbb{E}_{\theta_0}(\log p_\theta(X,Z)|X=x)$
+      - $\theta_0$ is just a generic $\theta$ (e.g. $\theta_t$ as we go through the algorithm)
+    - (E step: compute $Q$, M step: maximize $Q$ given $\theta$)
+  - define $l(\theta) = \log p_\theta(x)$
+    - $\log$ is monotone, so we can prove the statement for $l$ (the log likelihood) instead
+  - Part I: 
+    - Suppose that for some function $g(\theta)$, 
+      - (i) $l(\theta) \geq Q(\theta, \theta_0) + g(\theta_0)$ for any $\theta, \theta_0$
+        - define $h_{\theta_0}(\theta) = Q(\theta, \theta_0) + g(\theta_0)$
+      - (ii) $l(\theta) = Q(\theta,\theta) + g(\theta)$ for any $\theta$
+    - By (i), $l(\theta)$ is an upper bound for $h_{\theta_0}(\theta)$ for any $\theta_0$
+      - (aka fix $\theta_0$ and consider $h_{\theta_0}$ as we change $\theta$ around: the values of $h_{\theta_t}(\theta)$ are always underneath $l(\theta)$)
+    - $l(\theta) = h_\theta(\theta)$ by definition. In particular, $l(\theta_t) = h_{\theta_t}(\theta_t)$
+    - in other words, the function $h_{\theta_t}$ is always underneath or equal to $l$ and coincides with $l$ at $\theta_t$
+    - So in the maximization step, when we maximize $Q(\theta, \theta_t)$ we also maximize $h_{\theta_t}$
+      - Then the maximizer $\theta_{t+1}$ of $h_{\theta_t}$ takes a value under $h_{\theta_t}$ that is more than $l(\theta_t)$ and less than $l(\theta_{t+1})$, and we have our result
+        - $l(\theta_t) = h_{\theta_t}(\theta_t) \leq h_{\theta_t}(\theta_{t+1}) \leq l(\theta_{t+1})$
+        - $l(\theta_t) = Q(\theta_t,\theta_t) + g(\theta_t)\leq \max_\theta Q(\theta,\theta_t) + g(\theta_t) = Q(\theta_{t+1}, \theta_t) + g(\theta_t) \leq l(\theta_{t+1})$
+  - Part II:
+    - $l(\theta) = \log p_\theta(x) = \sum_z q(z)\log p_\theta(x)$
+      - for any pmf $q$
+    - $l(\theta) = \sum_z q(z)\log\big(p_\theta(x)p_\theta(z|x)\frac{q(z)}{p_\theta(z|x)}\frac{1}{q(z)}\big) = \sum_zq(z)\log p_\theta(x,z) + \sum_z q(z)\log\frac{q(z)}{p_\theta(z|x)} -\sum_zq(z)\log(q(z))$
+      - $-\sum_z q(z)\log q(z) = H(q)$, the entropy of $q$
+      - $\sum_z q(z)\log\frac{q(z)}{p_\theta(z|x)} = D(q||p)$, the relative entropy of $q$ and $p$
+      - (we make some definitions of what happens in corner cases: $0\log 0 = 0$, middle term is $0$ if $p_\theta(z|x) = 0$)
+    - now choose $q(z) = p_{\theta_0}(z|x) = \sum_z p_{\theta_0}(z|x) + \log p_{\theta_0}(x,z) + D(p_{\theta_0},p_{\theta}) + H(p_{\theta_0}(\cdot|z)) = \mathbb{E}_{\theta_0}(\log p_\theta(X,Z)|X=x) + g(\theta_0) = Q(\theta, \theta_0) + g(\theta_0)$
+      - i.e. we define $g(\theta_0)$ as the $D+H$ remainder
+      - check that the conditions are satisfied
+        - the first one is satisfied because it was how we ended up with our definition of $g$
+        - if $\theta = \theta_0$, then $D(p_{\theta_0},p_\theta) = 0$ and we obtain (ii)
+
+## 16.13: EM for MAP estimation
+
+- so far, EM only for MLE estimation
+  - but it's always better to do a MAP as MLE is prone to overfitting
+- Assume a prior $p(\theta)$, data $x = (x_1,\dots,x_n)$, latent variables $z$
+- Goal: find $\theta_{MAP} \in \arg\max_\theta p(\theta|x)$
+- Algorithm
+  - Initialize $\theta_0\in \Theta$
+  - for $t = 1,2,\dots$
+    - E-step: $R(\theta, \theta_{t-1}) = \mathbb{E}_{\theta_{t-1}}(\log p(X,Z|\theta)|X=x) + \log p(\theta)$
+      - $\log p(\theta)$ is the log of the prior of $\theta$
+    - M-step: take $\theta_t \in \arg\max_\theta R(\theta, \theta_{t-1})$
+- Can do it analytically for exponential families etc.
+- Claim: the likelihoods $p_\theta(x)$ are non-decreasing
+- Proof:
+  - $\mathcal{L}(\theta) = \log p(x, \theta)$
+    - we have a prior now for $\theta$, so we can consider the joint distribution
+  - $\mathcal{L}(\theta) = \log p(x|\theta) + \log p(\theta) = l(\theta) + \log p(\theta)$
+    - $= Q(\theta, \theta_0) + D(p(\cdot|x, \theta_0),p(\cdot|x,\theta)) + H(p(\cdot|x,\theta_0)) + \log p(\theta)$
+      - let $g(\theta_0) = H(p(\cdot|x,\theta_0))$
+      - then as for MLE, this $\geq R(\theta,\theta_0) + g(\theta_0)$ with equality when $\theta = \theta_0$ and we obtain $\mathcal{L}(\theta_t)\leq \mathcal{L}(\theta_{t+1})$
+- of course, nondecreasing doesn't even guarantee that we hit a local max, let alone a global max
