@@ -1917,3 +1917,68 @@ output:
       - let $g(\theta_0) = H(p(\cdot|x,\theta_0))$
       - then as for MLE, this $\geq R(\theta,\theta_0) + g(\theta_0)$ with equality when $\theta = \theta_0$ and we obtain $\mathcal{L}(\theta_t)\leq \mathcal{L}(\theta_{t+1})$
 - of course, nondecreasing doesn't even guarantee that we hit a local max, let alone a global max
+
+# 17: Sampling
+
+## 17.1: Sampling methods - why, pros, cons
+
+- Why sampling?
+  - can approximate expectations
+    - estimate statistics
+    - posterior inference
+  - visualization of "typical draws" of a distribution
+- why expectations?
+  - any probability is an expectation
+    - $P(X\in A) = \mathbb{E} I(X\in A)$, i.e. the expected value of an indicator
+  - often need approximations for sums/integrals, and many intractable sums/integrals can be written as expectations
+- Pros
+  - Easy to implement and understand compared to exact inference or deterministic approximations
+  - General purpose: can be used in many situations
+- Cons
+  - It's too easy - often used inappropriately
+  - Slower than deterministic/exact methods
+  - Getting "good" samples may be difficult
+  - Difficult to assess the performance of the method
+
+## 17.2 - 17.4: Monte Carlo methods
+
+- History
+  - Idea is trivial, but formal mathematics starting in the 1940s
+    - Enrico Fermi: Did Monte Carlo approximations by hand, was often close
+    - John Von Neumann: worked on computers
+    - Fermi, Von Neumann, and Stan Ulam were in Los Alamos in the 40s for the atomic bomb
+    - 1946: Ulam used an approximate method to simulate card deals
+      - thought of using Von Neumann's computers and Fermi's method to solve problems
+      - and then they did it
+  - really works once computers are invented
+  - Name: Stan Ulam had an uncle who often went to Monte Carlo
+- The method
+  - Goal: Approximate an expectation $\mathbb{E} f(X)$ of a real-valued function $f(X)$
+    - intractable to compute analytically
+  - Definition: If $X_1,\dots,X_n\sim p$ iid, then $\hat{\mu}_n = (1/n)\sum_i f(X_i)$ is a (basic) Monte Carlo estimator of $\mathbb{E} f(X)$ where $X\sim p$
+    - approximate the mean via the sample mean
+  - Remarks
+    - $\mathbb{E} \hat{\mu}_n = \mathbb{E} f(X)$, i.e. an unbiased estimator
+    - $\hat{\mu}_n$ converges to $\mathbb{E} f(X)$ as $n$ goes to $\infty$
+      - i.e. for all $\epsilon > 0$, $P(|\hat{\mu}_n-\mathbb{E}f(X)| < \epsilon)$ goes to 1
+      - aka it's a "consistent estimator
+      - assuming that $\sigma^2(f(X)) < \infty$, i.e. finite variance
+    - $\sigma^2(\hat{\mu}_n) = (1/n)\sigma^2(f(X))$
+      - because variance of a sum of independent random variables is the sum of the variances
+      - also assuming that $\sigma^2(f(X)) < \infty$, i.e. finite variance
+      - i.e. converges to 0 as $n$ goes to infinity. "at a rate of $1/\sqrt{n}$"
+        - regardless of the dimension of $X$
+    - remember that $MSE = bias^2 + variance^2$
+      - so MSE also goes to zero as $n$ goes to $\infty$
+  - Additional note: even though we have the convergence, calculating $\sigma^2(f(X))$ can be vry non-trivial
+- Examples of Monte Carlo
+  - Approximate $\pi$: sample from square, count the points in the circle vs out of the circle
+  - Area of Mandelbrot Set
+    - Contained in the square $S = [-2,2]\times [-2,2]$
+    - defined as the set of complex numbers $c$ such that the sequence $\{z_n\}$ is bounded, where $z_1 = 0$, $z_{n+1} = z_n^2 + c$
+    - Monte Carlo: uniformly take random elements of $S$, see if they fall in the set, etc.
+  - Expected return of an investment strategy
+    - e.g. return over 30 days: $T=30$
+    - model as a random process $X = (X_1,\dots, X_T)$
+    - suppose we have a strategy $S$ with return $R_S(X)$
+    - Monte Carlo to find the expected return: do a bunch of possibilities
