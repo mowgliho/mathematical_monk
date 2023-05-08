@@ -1982,3 +1982,95 @@ output:
     - model as a random process $X = (X_1,\dots, X_T)$
     - suppose we have a strategy $S$ with return $R_S(X)$
     - Monte Carlo to find the expected return: do a bunch of possibilities
+
+## 17.5 - 17.7: Importance Sampling
+
+- not actually sampling: an approximation of Monte Carlo methods
+- Monte Carlo: approximate $\mathbb{E} f(X) \approx \frac{1}{n}\sum_i f(X_i)$
+  - with $X\sim p$ and $X_i \sim p$
+  - but sometimes, the assumption that $X_i$ is also drawn from the same distribution is not true
+- Importance Sampling: can correct for drawing from a different distribution $q$ than $p$, and can in fact do "better"
+  - Assume $p$ is a density
+  - $\mathbb{E} f(X) = \int f(x)p(x)dx \approx f(x)\frac{p(x)}{q(x)} dx$
+    - valid for all pdf $q$ such that $q(x) = 0$ implies that $p(x) = 0$
+    - now we can do Monte Carlo on $f(x)\frac{p(x)}{q(x)}$, i.e. by $\frac{1}{n}\sum_i f(X_i)\frac{p(X_i)}{q(X_i)}$
+  - i.e. $\mathbb{E} f(X)\sim \frac{1}{n}\sum_i f(X_i)w(X_i)$, where $w(x) = p(x)/q(x)$ and $X_i \sim q$
+    - $w$'s are called "importance weights"
+  - as this is the Monte Carlo of $f(x)\frac{p(x)}{q(x)}$, we also have that it is unbiased, variance goes to 0, MSE goes to 0
+    - if we make a clever choice of $q$, we can get them to go to $0$ faster
+      - $\sigma^2(I_n) = \frac{1}{n}\sigma^2\big(f(x)\frac{p(x)}{q(x)}\big)$
+- Intuition
+  - Suppose that we invest with some strategy, and we get returns $f(x)$ that are terrible for some range of $x$ and only moderately positive otherwise
+    - suppose that these terrible $x$ results very rarely, so that they get very small $p$
+      - then with Monte Carlo, it'll take us a long time to realize that they exist
+        - very rare to get a terrible sample
+      - with importance sampling, we can bias our sampling to the terrible events
+        - and more quickly get these terrible samples
+  - Suppose $f$ is very highly positive for some values of $x$, and $p$ has most of it's mass for these values of $x$ - and pretty small otherwise
+    - but we have difficulty sampling with $q$ from the areas where $f$ is small
+      - then Importance Sampling will do poorly here
+  - moral: choose $q$ to be large where $|f(x)|p(x)$ is large
+    - but it may be hard to know which situation we're in
+- without normalization constants
+  - had assumed that
+    - can sample efficiently from $q$
+    - can efficiently evaluate $f$ and $w$ at these points
+  - but these assumptions can be broken: we often don't know $p$ or $q$
+  - Suppose that we know $p$ and $q$ up to a normalizing constant
+    - $p(x) = \tilde{p}(x)/z_p$, $q(x) = \tilde{q}/z_q$
+      - but we don't know $z_p$ or $z_q$
+    - $\mathbb{E} f(X) = \int f(x) p(x) = \int f(x)\frac{p(x)}{q(x)}q(x) = \int f(x)\frac{\tilde{p}(x)}{\tilde{q}(x)}\frac{z_q}{z_p}q(x)$
+    - now sample from $q$ via Monte Carlo
+      - $\approx \frac{z_q}{z_p}\frac{1}{n}\sum_i f(X_i)\tilde{w}(X_i)$
+        - $\tilde{w}(x) = \tilde{p}(x)/\tilde{q}(x)$
+        - $\frac{z_p}{z_q} = \frac{1}{z_q}\int \tilde{p}(x) = \int \frac{\tilde{p}(x)}{\tilde{q}(x)}q(x)\approx \frac{1}{n}\sum_i \tilde{w}(X_i)$ (approx is via Monte Carlo)
+        - Plug in, simplify: $\mathbb{E} f(X)\approx \frac{1}{n}\sum_i \hat{w}(X_i)f(X_i)$ where 
+          - $X_i \sim q$
+          - $\hat{w}(X_i) = \frac{\tilde{w}(X_i)}{(1/n)\sum_i \tilde{w}(X_i)}$
+          - $\tilde{w}(x) = \tilde{p}(x)/\tilde{q}(x)$
+
+## 17.8 - 17.10: Smirnov transform (Inverse transform sampling)
+
+- a way of generating random samples from a pdf on the real numbers
+  - e.g. have real valued random variable, can generate random samples from it
+- intution: invert the CDF of a random variable
+  - Suppose that $X\sim N(0,1)$
+    - consider the CDF $F(x) = P(X \leq x)$
+    - to sample from $X$, we randomly draw from $[0,1]$ and consider $F^{-1}$ of that number
+- Invertible case: Let $F:\mathbb{R} \rightarrow (0,1)$ be an invertible CDF
+  - invertible: $\exists F^{-1}:(0,1)\rightarrow \mathbb{R}$ s.t. $F^{-1}(F(x)) = x$ for all $x\in \mathbb{R}$, $F(F^{-1}(a)) = a$ for all $a\in (0,1)$
+  - if $U\sim Uniform(0,1)$, then $F^{-1}(U)\sim F$, i.e. $F^{-1}(U)$ has CDF $F$.
+  - Pf: Let $x,y\in \mathbb{R}$, $a,b\in (0,1)$
+    - remarks:
+      - $x\leq y$ implies $F(x)\leq F(y)$
+      - $x < y$ implies $F(x) < F(y)$: $F$ is invertible, so $F(x) \neq F(y)$ if $x\neq y$
+      - $a \leq b$ implies $F^{-1}(a)\leq F^{-1}(b)$: if $F^{-1}(a) > F^{-1}(b)$, then $a = F(F^{-1}(a)) > F(F^{-1}(b)) = b$, i.e. a contradiction
+      - $F^{-1}(a)\leq x$ if and only if $a\leq F(x)$: combine previous conclusions
+      - The CDF of the uniform distribution $H$ is $0$ if $x\leq 0$, $x$ for $x\in (0,1)$ and $1$ for $x\geq 1$
+    - $P(F^{-1}(U)\leq x) = P(U\leq F(x)) = H(F(x)) = F(x)$
+      - thus $F$ is the cdf of the random variable $F^{-1}(U)$
+  - this doesn't work for more general cases (e.g. discrete case: $F$ is not invertible)
+- General Case
+  - often non-invertible: e.g. exponential distribution, discrete
+  - Setup:
+    - $F:\mathbb{R}\rightarrow [0,1]$ a CDF 
+    - $G:(0,1)\rightarrow \mathbb{R}$ by $G(a) = \inf \{x\in \mathbb{R}: a \leq F(x)\}$
+  - Statement: if $U\sim Uniform(0,1)$ then $G(U)$ has CDF $F$
+  - Remarks
+    - If $F:\mathbb{R} \rightarrow (0,1)$ is invertible then $G = F^{-1}$
+    - $G(a) \in (0,1)$ as $F(x) \rightarrow \infty$ as $x$ goes to $\infty$ and $F(x)\rightarrow 0$ as $x$ goes to $-\infty$
+  - Proof:
+    - Claim: $\forall a\in (0,1)$ and $\forall y\in \mathbb{R}$, then $a\leq F(y)$ iff $G(a)\leq y$
+      - Proof:
+        - if $a\leq F(y)$, then $G(a) = \inf \{x| a\leq F(x)\}$. $y$ is in this set by assumption, so by the definition of $y$, then $G(a)\leq y$
+        - if $G(a)\leq y$. As $G(a)$ goes to the extremes of $(0,1)$ (see remark), then the set in $G(a)$ is non-empty. Let $x_1,x_2,\dots \geq G(a)$ be a sequence of elements that converge to $G(a)$. Then $a\leq F(x_n)$ for all $n$. So if we take the limit, $a\leq\lim F(x_n) = F(G(a)) \leq F(y)$
+    - Proof: same as for the invertible case
+- Example: Sampling an exponential random variable
+  - $X\sim Exp(\lambda)$, $f(x) = \lambda e^{-\lambda x}$ for $x \geq 0$ and $0$ otherwise
+  - Then the CDF is $F(x) = 1 - e^{-\lambda x}$ for $x \geq 0$ and 0 otherwise
+    - CDF is not invertible, but is invertible for $x > 0$
+    - apply the generalized case, define $G(a) = \inf (x\in \mathbb{R} | a \leq F(x)$ for $a\in (0,1)$
+      - $a = 1 - e^{-\lambda x}$ thus $x = (-1/\lambda)\log (1-a)$
+        - for an $a$ in $(0,1)$, this is the $x$ that we sample
+  - so we select $a$ uniformly, and these are the points that we get that are distributed exponentially as desired
+- Note: doesn't really work for Gaussians for example, as we can't get a closed form solution for the inverse like we did here
