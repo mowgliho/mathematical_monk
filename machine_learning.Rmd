@@ -2069,8 +2069,60 @@ output:
   - $X\sim Exp(\lambda)$, $f(x) = \lambda e^{-\lambda x}$ for $x \geq 0$ and $0$ otherwise
   - Then the CDF is $F(x) = 1 - e^{-\lambda x}$ for $x \geq 0$ and 0 otherwise
     - CDF is not invertible, but is invertible for $x > 0$
-    - apply the generalized case, define $G(a) = \inf (x\in \mathbb{R} | a \leq F(x)$ for $a\in (0,1)$
+    - apply the generalized case, define $G(a) = \inf (x\in \mathbb{R} | a \leq F(x)$ for $a\in (0,1))$
       - $a = 1 - e^{-\lambda x}$ thus $x = (-1/\lambda)\log (1-a)$
         - for an $a$ in $(0,1)$, this is the $x$ that we sample
   - so we select $a$ uniformly, and these are the points that we get that are distributed exponentially as desired
 - Note: doesn't really work for Gaussians for example, as we can't get a closed form solution for the inverse like we did here
+
+## 17.11 - 17.14: Rejection Sampling
+
+- Info
+  - Simple and clever way to draw random samples from complicated pdfs.
+  - very general, can be higher dimensional spaces
+  - can be hard to do efficiently in large dimensions
+- Uniform case
+  - Goal: Generate samples from the uniform distribution on a set $A$, where $A$ is a complicated set.
+  - Intuition: draw a bunch of samples from a larger set, reject samples that are not in our set.
+  - Example: Sample $X$ uniformly over the Mandelbrot set
+  - Prop: If $A\subset B$ and $Y_1,Y_2,\dots \sim Unif(B)$ iid, and $X= Y_K$ where $K = \min \{k: Y_k\in A\}$, then $X\sim Unif(A)$
+    - Pf: Exercise (Hint - do the discrete case first using Geometric series)
+- Non-Uniform case
+  - Intuition:
+    - Suppose we have a pdf, and another pdf that is nonzero where the first is nonzero
+    - To select from the first distribution: select from the second distribution, randomly reject based off of the ratio of the two distributions
+  - Goal: Sample from a complicated pdf on $\mathbb{R}^d$.
+  - Given: $\tilde{f}$, where $f(x) = \tilde{f}(x)/\alpha$ where $/alpha > 0$
+    - $\tilde{f}$ can be easier to deal with/evaluate than $f$
+  - Algorithm:
+    - Choose a "proposal" distribution $q$ such that $\exists c > 0$ with $cq(x)\geq \tilde{f}(x)$ for all $x$
+      - we want $q$ to be easy to sample from.
+    - Draw a sample $X\sim q$, then sample $Y\sim Unif(0, cq(X))$ given $X$
+    - If $y \leq \tilde{f}(X)$, then set $z=x$. Otherwise, "reject" this sample and return to the previous step.
+    - the output is $z$, which is distributed according to $f$
+  - Intuition:
+    - $\tilde{f}$ is proportional to the pdf $f$
+    - $q$ is a pdf that we can scale up such that it contains $\tilde{f}$
+    - Now we sample $x$ from q, and then sample uniformly from 0 to the scaled up version of $q$ at $x$
+      - if we're under $\tilde{f}$, then take $x$ as a sample for $f$
+      - otherwise, draw a new $x'$ and then sample uniformly for this new $x'$, etc.
+    - if we select an $x$ where $cq$ is much higher than $\tilde{f}$, then we're almost certain to reject.
+    - but if we select an $x$ where $cq$ is relatively close to $\tilde{f}$, then we're much more likely to accept
+  - Proof of algorithm
+    - A: Prove that the second step selects points uniformly from the points under the curve $cq$
+    - B: In the final step, we reject points that are outside of $\tilde{f}$ - and end up uniformly drawing points from the points below $\tilde{f}$.
+    - C: then looking at the $x$ points (i.e. project down to the axis), we've drawn uniformly from $f$
+    - Lemma: If $X\sim q$, $Y|X\sim Unif(0,cq(X))$ then the the pair $(X,Y)$ is uniformly distributed on $B$, where $B = \{(x,y):x\in \mathbb{R}^d, 0 < y < cq(x)\}$
+      - I.e. A
+      - Pf
+        - If $y\notin (0,cq(x))$, then $p(x,y) = p(y|x)p(x) = 0$ as $p(y|x)= 0$
+        - Otherwise, $p(x,y) = p(y|x)p(x) = (1/(cq(x))) q(x) = 1/c$, i.e. uniform.
+    - B is obvious
+    - Lemma: If $(X,Y) \sim Unif(A)$, where $A = \{(x,y)|x\in \mathbb{R}^d, 0 < y < \tilde{f}(x)\}$, then $X\sim f$
+      - I.e. C
+      - Pf: The volume $m(A) = \int \tilde{f}(x)dx = \int \alpha f(x)dx = \alpha$
+        - More explicitly, $\int_A b dxdy = b\int_x \int_0^{\tilde{f}(x)} dyy dx = b\int_x \tilde{f}(x) = b \alpha$, i.e. $b = 1/\alpha$
+        - $p(x) = \int_\mathbb{R} p(x,y)dy = \int \frac{1}{\alpha}I(0<y<\tilde{f}(x)) dy = \tilde{f}(x)/\alpha = f(x)$
+    - Prop: Suppose $f$ and $q$ are pdfs on $\mathbb{R}^d$ such that $\tilde{f} = \alpha f(x)$ for $\alpha > 0$ and $cq(x)\geq \tilde{f}(x)$ for all $x\in \mathbb{R}^d$ with $c > 0$. Thenif $X_1, X_2, \dots \sim q$ and $Y_k|X_k \sim Unif (0, cq(X_k))$ and $Z = X_k$ where $K = \min \{k: Y_k\leq \tilde{f}(X_k)\}$. Then $Z\sim f$
+    - Pf: put together the pieces we proved earlier
+  - a good $q$ is easy to draw fraom and can fit quite tightly to $\tilde{f}$, as the space between $cq$ and $\tilde{f}$ is essentially wasted space
